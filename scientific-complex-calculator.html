@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scientific & Complex Calculator (CSP Safe)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.9.1/lib/browser/math.min.js"></script>
+  <style>
+    body {
+      background: #24243e;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .calculator {
+      background: #1d1f2f;
+      padding: 32px 24px 24px 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 22px 5px rgba(20,20,40,0.3);
+    }
+    .display {
+      width: 350px;
+      min-height: 64px;
+      background: #262a34;
+      border-radius: 8px;
+      color: #00eaff;
+      padding: 16px;
+      text-align: right;
+      font-size: 1.6em;
+      margin-bottom: 18px;
+      white-space: pre-line;
+      word-break: break-all;
+      box-shadow: 0 2px 4px #0007;
+      transition: color 0.18s;
+    }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(6, 54px);
+      gap: 10px;
+    }
+    button {
+      padding: 13px 0;
+      font-size: 1em;
+      font-weight: 500;
+      background: #202539;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.16s, color 0.18s;
+      outline: none;
+      box-shadow: 0 2px 4px #0004;
+      user-select: none;
+    }
+    button:active {
+      background: #334d76;
+    }
+    .key-func { color: #00c3fa; }
+    .key-adv { color: #84e960; }
+    .key-num { color: #fff; font-size:1.14em;}
+    .key-op { color: #ffad1f; }
+    .key-eval { background: #007e60; color: #fff; }
+    .key-eval:active { background: #2bbb7b; }
+    .key-clr { background: #2c1f32; color: #f55; }
+    .key-clr:active { background: #632146; }
+    @media (max-width: 650px) {
+      .calculator { padding: 10px 2vw;}
+      .display { width: 92vw;}
+      .keypad { grid-template-columns: repeat(6, 1fr); }
+      button { font-size: 0.97em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="keypad">
+      <button class="key-func" data-value="sin(">sin</button>
+      <button class="key-func" data-value="cos(">cos</button>
+      <button class="key-func" data-value="tan(">tan</button>
+      <button class="key-func" data-value="log10(">log</button>
+      <button class="key-func" data-value="log(">ln</button>
+      <button class="key-clr" data-action="all-clear">AC</button>
+
+      <button class="key-func" data-value="asin(">sin⁻¹</button>
+      <button class="key-func" data-value="acos(">cos⁻¹</button>
+      <button class="key-func" data-value="atan(">tan⁻¹</button>
+      <button class="key-func" data-value="sqrt(">√</button>
+      <button class="key-func" data-value="^">^</button>
+      <button class="key-clr" data-action="del">DEL</button>
+
+      <button class="key-num" data-value="7">7</button>
+      <button class="key-num" data-value="8">8</button>
+      <button class="key-num" data-value="9">9</button>
+      <button class="key-op" data-value="/">÷</button>
+      <button class="key-adv" data-value="(">(</button>
+      <button class="key-adv" data-value=")">)</button>
+
+      <button class="key-num" data-value="4">4</button>
+      <button class="key-num" data-value="5">5</button>
+      <button class="key-num" data-value="6">6</button>
+      <button class="key-op" data-value="*">×</button>
+      <button class="key-func" data-value="exp(">exp</button>
+      <button class="key-adv" data-value="pi">π</button>
+
+      <button class="key-num" data-value="1">1</button>
+      <button class="key-num" data-value="2">2</button>
+      <button class="key-num" data-value="3">3</button>
+      <button class="key-op" data-value="-">−</button>
+      <button class="key-func" data-value="abs(">abs</button>
+      <button class="key-adv" data-value="e">e</button>
+
+      <button class="key-num" data-value="0">0</button>
+      <button class="key-adv" data-value=".">.</button>
+      <button class="key-func" data-value="i">i</button>
+      <button class="key-op" data-value="+">+</button>
+      <button class="key-adv" data-value="re(">Re</button>
+      <button class="key-adv" data-value="im(">Im</button>
+
+      <button class="key-eval" data-action="eval" style="grid-column: span 6;">=</button>
+    </div>
+    <div style="text-align:center;font-size:11px;margin-top:16px;color:#b4f0e3a0">Scientific & Complex Calculator</div>
+  </div>
+  <script>
+    const display = document.getElementById('display');
+    let buffer = "";
+
+    function setDisplay(val) {
+      display.textContent = val;
+    }
+    function append(val) {
+      if(buffer==="0") buffer = "";
+      buffer += val;
+      setDisplay(buffer);
+    }
+    function allClear() {
+      buffer="";
+      setDisplay('0');
+    }
+    function del() {
+      buffer = buffer.slice(0,-1);
+      setDisplay(buffer||'0');
+    }
+
+    function evalBuffer() {
+      if(!buffer.trim()) return;
+      try {
+        // Replace shortcuts
+        let expr = buffer.replace(/π/g,'pi').replace(/e\b/g,"e").replace(/(\d)i\b/g, '$1*i');
+        let result = math.evaluate(expr);
+
+        // Format result
+        if (typeof result === 'object' && 're' in result && 'im' in result) {
+          // Complex
+          let re = Math.abs(result.re)<1e-12 ? 0 : result.re;
+          let im = Math.abs(result.im)<1e-12 ? 0 : result.im;
+          let txt = '';
+          if (re !== 0) txt += Number(re.toFixed(7));
+          if (im !== 0) {
+            txt += (im > 0 && re!==0 ? "+" : "") + (im===1?"i":(im===-1?"-i":Number(im.toFixed(7))+"i"));
+          }
+          if(txt === '') txt = '0';
+          setDisplay(buffer + "\n= " + txt);
+        } else if (typeof result === "number") {
+          setDisplay(buffer + "\n= " + result);
+        } else {
+          setDisplay(buffer + "\n= " + result.toString());
+        }
+        buffer = "";
+      } catch(e) {
+        setDisplay("Error: " + e.message);
+      }
+    }
+
+    document.querySelectorAll('.keypad button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const v = btn.dataset.value, act = btn.dataset.action;
+        if(act==='all-clear') allClear();
+        else if(act==='del') del();
+        else if(act==='eval') evalBuffer();
+        else if(v){
+          append(v);
+        }
+      });
+    });
+
+    // Keyboard support (simple mapping)
+    document.addEventListener('keydown', (e)=>{
+      let k = e.key;
+      if(/[0-9.]/.test(k)) append(k);
+      else if (k==="+"||k==="-"||k==="*"||k==="/"||k==="^") append(k);
+      else if (k==="("||k===")") append(k);
+      else if (k==="i") append("i");
+      else if (k==="e") append("e");
+      else if (k==="p") append("π");
+      else if (k==="Backspace") del();
+      else if (k==="Enter" || k==="=") evalBuffer();
+      else if (k==="Escape") allClear();
+    });
+  </script>
+</body>
+</html>
