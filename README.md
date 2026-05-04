@@ -1,6 +1,17 @@
 # Scientific Calculator
 
-A powerful, user-friendly scientific calculator built for precision and advanced mathematical computations. This project supports standard arithmetic, trigonometric, logarithmic, and other scientific functions, aiming to serve both educational and practical use cases.
+A powerful, user-friendly scientific calculator built for precision and advanced mathematical computations. This project supports standard arithmetic, trigonometric, logarithmic, and other scientific functions, including complex numbers.
+
+## 👉 Scientific & Complex Calculator Online Demo
+
+Try the interactive calculator instantly:
+
+[![Open Scientific & Complex Calculator](https://img.shields.io/badge/Launch-Calculator%20Demo-%23007e60?logo=Firefox-Browser&logoColor=white&style=for-the-badge)](https://arupdas0825.github.io/scientific-calculator/scientific-complex-calculator.html)
+
+> **Tip:** If the button above doesn't open, make sure [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site) is enabled and deployed from your repository with the `/scientific-complex-calculator.html` file included.
+
+<!-- Optionally, you can embed a static screenshot here -->
+<!-- ![Calculator Screenshot](https://arupdas0825.github.io/scientific-calculator/calculator-screenshot.png) -->
 
 ## Features
 
