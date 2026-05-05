@@ -2,204 +2,608 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Scientific & Complex Calculator (CSP Safe)</title>
+  <title>Professional Scientific Calculator - Advanced Math Suite</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11.9.1/lib/browser/math.min.js"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: #24243e;
+      background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
       color: #fff;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      perspective: 1200px;
+      overflow: hidden;
     }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(0, 234, 255, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(132, 233, 96, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container {
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
     .calculator {
-      background: #1d1f2f;
-      padding: 32px 24px 24px 24px;
-      border-radius: 16px;
-      box-shadow: 0 10px 22px 5px rgba(20,20,40,0.3);
+      background: linear-gradient(145deg, #1d1f2f 0%, #252a3a 100%);
+      padding: 40px 32px;
+      border-radius: 24px;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(0, 234, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 234, 255, 0.2);
+      transform: translateZ(50px);
+      transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+      animation: slideUp 0.6s ease-out;
     }
-    .display {
-      width: 350px;
-      min-height: 64px;
-      background: #262a34;
-      border-radius: 8px;
+
+    .calculator:hover {
+      transform: translateZ(70px) rotateX(2deg);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(0, 234, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) translateZ(0);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateZ(50px);
+      }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .header h1 {
+      font-size: 1.4em;
+      font-weight: 300;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #00eaff 0%, #84e960 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 0.8em;
       color: #00eaff;
-      padding: 16px;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .display-container {
+      margin-bottom: 24px;
+      perspective: 1000px;
+    }
+
+    .display {
+      width: 100%;
+      min-height: 90px;
+      background: linear-gradient(135deg, #0a0e1a 0%, #131829 100%);
+      border-radius: 16px;
+      color: #00eaff;
+      padding: 20px 24px;
       text-align: right;
-      font-size: 1.6em;
-      margin-bottom: 18px;
+      font-size: 1.8em;
+      font-weight: 500;
       white-space: pre-line;
       word-break: break-all;
-      box-shadow: 0 2px 4px #0007;
-      transition: color 0.18s;
+      box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(0, 234, 255, 0.2),
+        0 0 20px rgba(0, 234, 255, 0.15);
+      transition: all 0.2s ease;
+      border: 1px solid rgba(0, 234, 255, 0.3);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      overflow-y: auto;
+      max-height: 120px;
     }
+
+    .display::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .display::-webkit-scrollbar-track {
+      background: rgba(0, 234, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .display::-webkit-scrollbar-thumb {
+      background: rgba(0, 234, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    .display::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 234, 255, 0.5);
+    }
+
+    .display.active {
+      box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(0, 234, 255, 0.4),
+        0 0 30px rgba(0, 234, 255, 0.25);
+      background: linear-gradient(135deg, #0f1525 0%, #1a2135 100%);
+    }
+
     .keypad {
       display: grid;
-      grid-template-columns: repeat(6, 54px);
-      gap: 10px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      animation: fadeIn 0.8s ease-out 0.4s both;
     }
+
     button {
-      padding: 13px 0;
+      padding: 16px 12px;
       font-size: 1em;
-      font-weight: 500;
-      background: #202539;
+      font-weight: 600;
+      background: linear-gradient(145deg, #2a2f42 0%, #232938 100%);
       color: #fff;
-      border: none;
-      border-radius: 8px;
+      border: 1px solid rgba(0, 234, 255, 0.15);
+      border-radius: 12px;
       cursor: pointer;
-      transition: background 0.16s, color 0.18s;
+      transition: all 0.2s ease;
       outline: none;
-      box-shadow: 0 2px 4px #0004;
+      box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
       user-select: none;
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(0);
     }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+      z-index: 1;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:hover {
+      transform: translateY(-3px) translateZ(10px);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 15px rgba(0, 234, 255, 0.2);
+      border-color: rgba(0, 234, 255, 0.3);
+    }
+
     button:active {
-      background: #334d76;
+      transform: translateY(-1px) translateZ(5px);
+      box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 2px rgba(0, 0, 0, 0.3);
     }
-    .key-func { color: #00c3fa; }
-    .key-adv { color: #84e960; }
-    .key-num { color: #fff; font-size:1.14em;}
-    .key-op { color: #ffad1f; }
-    .key-eval { background: #007e60; color: #fff; }
-    .key-eval:active { background: #2bbb7b; }
-    .key-clr { background: #2c1f32; color: #f55; }
-    .key-clr:active { background: #632146; }
-    @media (max-width: 650px) {
-      .calculator { padding: 10px 2vw;}
-      .display { width: 92vw;}
-      .keypad { grid-template-columns: repeat(6, 1fr); }
-      button { font-size: 0.97em;}
+
+    .key-func {
+      color: #00c3fa;
+      border-color: rgba(0, 195, 250, 0.2);
+    }
+
+    .key-func:hover {
+      background: linear-gradient(145deg, #1a3a52 0%, #153047 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 195, 250, 0.3);
+      border-color: rgba(0, 195, 250, 0.5);
+    }
+
+    .key-adv {
+      color: #84e960;
+      border-color: rgba(132, 233, 96, 0.2);
+    }
+
+    .key-adv:hover {
+      background: linear-gradient(145deg, #2a4a1f 0%, #1f3a15 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(132, 233, 96, 0.3);
+      border-color: rgba(132, 233, 96, 0.5);
+    }
+
+    .key-num {
+      color: #ffffff;
+      font-size: 1.2em;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .key-num:hover {
+      background: linear-gradient(145deg, #34394f 0%, #2d3240 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .key-op {
+      color: #ffad1f;
+      border-color: rgba(255, 173, 31, 0.2);
+    }
+
+    .key-op:hover {
+      background: linear-gradient(145deg, #4a3a1f 0%, #3a2a15 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 173, 31, 0.3);
+      border-color: rgba(255, 173, 31, 0.5);
+    }
+
+    .key-eval {
+      background: linear-gradient(145deg, #00a876 0%, #006a52 100%);
+      color: #fff;
+      border-color: rgba(0, 168, 118, 0.4);
+      grid-column: span 6;
+      font-size: 1.1em;
+      letter-spacing: 1px;
+    }
+
+    .key-eval:hover {
+      background: linear-gradient(145deg, #00d494 0%, #008c6a 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(0, 212, 148, 0.4);
+      border-color: rgba(0, 212, 148, 0.6);
+    }
+
+    .key-eval:active {
+      background: linear-gradient(145deg, #008c6a 0%, #005a42 100%);
+    }
+
+    .key-clr {
+      background: linear-gradient(145deg, #4a2a32 0%, #3a1a22 100%);
+      color: #ff5577;
+      border-color: rgba(255, 85, 119, 0.2);
+    }
+
+    .key-clr:hover {
+      background: linear-gradient(145deg, #6a4a52 0%, #5a3a42 100%);
+      box-shadow: 
+        0 10px 24px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 85, 119, 0.3);
+      border-color: rgba(255, 85, 119, 0.5);
+    }
+
+    .key-clr:active {
+      background: linear-gradient(145deg, #3a1a22 0%, #2a0a12 100%);
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.75em;
+      margin-top: 20px;
+      color: #00eaff;
+      opacity: 0.5;
+      letter-spacing: 1px;
+      animation: fadeIn 0.8s ease-out 0.6s both;
+    }
+
+    .mode-indicator {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      background: rgba(0, 234, 255, 0.2);
+      border-radius: 4px;
+      font-size: 0.85em;
+      border: 1px solid rgba(0, 234, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .calculator {
+        padding: 24px 16px;
+        margin: 20px;
+      }
+
+      .header h1 {
+        font-size: 1.2em;
+      }
+
+      .display {
+        min-height: 80px;
+        font-size: 1.5em;
+        padding: 16px 20px;
+      }
+
+      .keypad {
+        gap: 10px;
+      }
+
+      button {
+        padding: 14px 10px;
+        font-size: 0.95em;
+        border-radius: 10px;
+      }
+
+      .key-num {
+        font-size: 1.1em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .calculator {
+        padding: 16px 12px;
+        margin: 0;
+        min-width: 100%;
+      }
+
+      .header h1 {
+        font-size: 1em;
+      }
+
+      .header p {
+        font-size: 0.7em;
+      }
+
+      .display {
+        min-height: 70px;
+        font-size: 1.3em;
+        padding: 12px 16px;
+      }
+
+      .keypad {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+
+      button {
+        padding: 12px 8px;
+        font-size: 0.9em;
+        border-radius: 8px;
+      }
+
+      .key-eval {
+        font-size: 1em;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="calculator">
-    <div class="display" id="display">0</div>
-    <div class="keypad">
-      <button class="key-func" data-value="sin(">sin</button>
-      <button class="key-func" data-value="cos(">cos</button>
-      <button class="key-func" data-value="tan(">tan</button>
-      <button class="key-func" data-value="log10(">log</button>
-      <button class="key-func" data-value="log(">ln</button>
-      <button class="key-clr" data-action="all-clear">AC</button>
+  <div class="container">
+    <div class="calculator">
+      <div class="header">
+        <h1>Scientific Calculator</h1>
+        <p>Advanced Mathematical Computations</p>
+      </div>
+      <div class="display-container">
+        <div class="display" id="display">0</div>
+      </div>
+      <div class="keypad">
+        <!-- Trigonometric Functions -->
+        <button class="key-func" data-value="sin(" title="Sine function">sin</button>
+        <button class="key-func" data-value="cos(" title="Cosine function">cos</button>
+        <button class="key-func" data-value="tan(" title="Tangent function">tan</button>
+        <button class="key-func" data-value="log10(" title="Base-10 logarithm">log</button>
+        <button class="key-func" data-value="log(" title="Natural logarithm">ln</button>
+        <button class="key-clr" data-action="all-clear" title="Clear all">AC</button>
 
-      <button class="key-func" data-value="asin(">sin⁻¹</button>
-      <button class="key-func" data-value="acos(">cos⁻¹</button>
-      <button class="key-func" data-value="atan(">tan⁻¹</button>
-      <button class="key-func" data-value="sqrt(">√</button>
-      <button class="key-func" data-value="^">^</button>
-      <button class="key-clr" data-action="del">DEL</button>
+        <!-- Inverse Trigonometric Functions -->
+        <button class="key-func" data-value="asin(" title="Inverse sine">sin⁻¹</button>
+        <button class="key-func" data-value="acos(" title="Inverse cosine">cos⁻¹</button>
+        <button class="key-func" data-value="atan(" title="Inverse tangent">tan⁻¹</button>
+        <button class="key-func" data-value="sqrt(" title="Square root - Fixed!">√</button>
+        <button class="key-func" data-value="^" title="Power/Exponent">^</button>
+        <button class="key-clr" data-action="del" title="Delete last character">DEL</button>
 
-      <button class="key-num" data-value="7">7</button>
-      <button class="key-num" data-value="8">8</button>
-      <button class="key-num" data-value="9">9</button>
-      <button class="key-op" data-value="/">÷</button>
-      <button class="key-adv" data-value="(">(</button>
-      <button class="key-adv" data-value=")">)</button>
+        <!-- Number Pad -->
+        <button class="key-num" data-value="7">7</button>
+        <button class="key-num" data-value="8">8</button>
+        <button class="key-num" data-value="9">9</button>
+        <button class="key-op" data-value="/" title="Division">÷</button>
+        <button class="key-adv" data-value="(" title="Left parenthesis">(</button>
+        <button class="key-adv" data-value=")" title="Right parenthesis">)</button>
 
-      <button class="key-num" data-value="4">4</button>
-      <button class="key-num" data-value="5">5</button>
-      <button class="key-num" data-value="6">6</button>
-      <button class="key-op" data-value="*">×</button>
-      <button class="key-func" data-value="exp(">exp</button>
-      <button class="key-adv" data-value="pi">π</button>
+        <button class="key-num" data-value="4">4</button>
+        <button class="key-num" data-value="5">5</button>
+        <button class="key-num" data-value="6">6</button>
+        <button class="key-op" data-value="*" title="Multiplication">×</button>
+        <button class="key-func" data-value="exp(" title="Exponential (e^x)">exp</button>
+        <button class="key-adv" data-value="pi" title="Pi (π)">π</button>
 
-      <button class="key-num" data-value="1">1</button>
-      <button class="key-num" data-value="2">2</button>
-      <button class="key-num" data-value="3">3</button>
-      <button class="key-op" data-value="-">−</button>
-      <button class="key-func" data-value="abs(">abs</button>
-      <button class="key-adv" data-value="e">e</button>
+        <button class="key-num" data-value="1">1</button>
+        <button class="key-num" data-value="2">2</button>
+        <button class="key-num" data-value="3">3</button>
+        <button class="key-op" data-value="-" title="Subtraction">−</button>
+        <button class="key-func" data-value="abs(" title="Absolute value">|x|</button>
+        <button class="key-adv" data-value="e" title="Euler's number">e</button>
 
-      <button class="key-num" data-value="0">0</button>
-      <button class="key-adv" data-value=".">.</button>
-      <button class="key-func" data-value="i">i</button>
-      <button class="key-op" data-value="+">+</button>
-      <button class="key-adv" data-value="re(">Re</button>
-      <button class="key-adv" data-value="im(">Im</button>
+        <button class="key-num" data-value="0">0</button>
+        <button class="key-adv" data-value="." title="Decimal point">.</button>
+        <button class="key-func" data-value="i" title="Imaginary unit">i</button>
+        <button class="key-op" data-value="+" title="Addition">+</button>
+        <button class="key-adv" data-value="re(" title="Real part">Re</button>
+        <button class="key-adv" data-value="im(" title="Imaginary part">Im</button>
 
-      <button class="key-eval" data-action="eval" style="grid-column: span 6;">=</button>
+        <button class="key-eval" data-action="eval" title="Calculate result (Enter)">=</button>
+      </div>
+      <div class="footer">
+        Professional Scientific Calculator <span class="mode-indicator">v2.0</span>
+      </div>
     </div>
-    <div style="text-align:center;font-size:11px;margin-top:16px;color:#b4f0e3a0">Scientific & Complex Calculator</div>
   </div>
+
   <script>
     const display = document.getElementById('display');
     let buffer = "";
 
     function setDisplay(val) {
       display.textContent = val;
+      display.classList.add('active');
+      setTimeout(() => display.classList.remove('active'), 200);
     }
+
     function append(val) {
-      if(buffer==="0") buffer = "";
+      if (buffer === "0") buffer = "";
       buffer += val;
-      setDisplay(buffer);
+      display.textContent = buffer;
     }
+
     function allClear() {
-      buffer="";
+      buffer = "";
       setDisplay('0');
     }
+
     function del() {
-      buffer = buffer.slice(0,-1);
-      setDisplay(buffer||'0');
+      buffer = buffer.slice(0, -1);
+      setDisplay(buffer || '0');
     }
 
     function evalBuffer() {
-      if(!buffer.trim()) return;
+      if (!buffer.trim()) return;
       try {
         // Replace shortcuts
-        let expr = buffer.replace(/π/g,'pi').replace(/e\b/g,"e").replace(/(\d)i\b/g, '$1*i');
+        let expr = buffer
+          .replace(/π/g, 'pi')
+          .replace(/\be\b/g, "e")
+          .replace(/(\d)i\b/g, '$1*i')
+          .replace(/(\))(\d)/g, '$1*$2')
+          .replace(/(\))pi\b/g, '$1*pi')
+          .replace(/(\))e\b/g, '$1*e')
+          .replace(/(\d)\(/g, '$1*(')
+          .replace(/\)\(/g, ')*(')
+          .replace(/e\(/g, 'e*(')
+          .replace(/pi\(/g, 'pi*(');
+
         let result = math.evaluate(expr);
 
-        // Format result
+        // Format result with improved handling
         if (typeof result === 'object' && 're' in result && 'im' in result) {
-          // Complex
-          let re = Math.abs(result.re)<1e-12 ? 0 : result.re;
-          let im = Math.abs(result.im)<1e-12 ? 0 : result.im;
+          // Complex number
+          let re = Math.abs(result.re) < 1e-12 ? 0 : result.re;
+          let im = Math.abs(result.im) < 1e-12 ? 0 : result.im;
           let txt = '';
-          if (re !== 0) txt += Number(re.toFixed(7));
-          if (im !== 0) {
-            txt += (im > 0 && re!==0 ? "+" : "") + (im===1?"i":(im===-1?"-i":Number(im.toFixed(7))+"i"));
+          
+          if (re !== 0) {
+            txt += Number(re.toFixed(10)).toString();
           }
-          if(txt === '') txt = '0';
+          if (im !== 0) {
+            txt += (im > 0 && re !== 0 ? "+" : "") + 
+                   (im === 1 ? "i" : (im === -1 ? "-i" : Number(im.toFixed(10)).toString() + "i"));
+          }
+          if (txt === '') txt = '0';
+          
           setDisplay(buffer + "\n= " + txt);
         } else if (typeof result === "number") {
+          // Handle very small numbers
+          let formattedResult = Math.abs(result) < 1e-10 ? 0 : result;
+          // Limit decimal places for display
+          if (Number.isFinite(formattedResult)) {
+            formattedResult = parseFloat(formattedResult.toFixed(10));
+          }
+          setDisplay(buffer + "\n= " + formattedResult);
+        } else if (typeof result === "string") {
           setDisplay(buffer + "\n= " + result);
         } else {
           setDisplay(buffer + "\n= " + result.toString());
         }
         buffer = "";
-      } catch(e) {
+      } catch (e) {
         setDisplay("Error: " + e.message);
+        buffer = "";
       }
     }
 
-    document.querySelectorAll('.keypad button').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const v = btn.dataset.value, act = btn.dataset.action;
-        if(act==='all-clear') allClear();
-        else if(act==='del') del();
-        else if(act==='eval') evalBuffer();
-        else if(v){
+    // Button click handlers
+    document.querySelectorAll('.keypad button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.dataset.value;
+        const act = btn.dataset.action;
+        
+        if (act === 'all-clear') {
+          allClear();
+        } else if (act === 'del') {
+          del();
+        } else if (act === 'eval') {
+          evalBuffer();
+        } else if (v) {
           append(v);
         }
       });
     });
 
-    // Keyboard support (simple mapping)
-    document.addEventListener('keydown', (e)=>{
+    // Keyboard support with improved handling
+    document.addEventListener('keydown', (e) => {
       let k = e.key;
-      if(/[0-9.]/.test(k)) append(k);
-      else if (k==="+"||k==="-"||k==="*"||k==="/"||k==="^") append(k);
-      else if (k==="("||k===")") append(k);
-      else if (k==="i") append("i");
-      else if (k==="e") append("e");
-      else if (k==="p") append("π");
-      else if (k==="Backspace") del();
-      else if (k==="Enter" || k==="=") evalBuffer();
-      else if (k==="Escape") allClear();
+      
+      if (/[0-9.]/.test(k)) {
+        append(k);
+        e.preventDefault();
+      } else if (k === "+" || k === "-" || k === "*" || k === "/" || k === "^") {
+        append(k);
+        e.preventDefault();
+      } else if (k === "(" || k === ")") {
+        append(k);
+        e.preventDefault();
+      } else if (k.toLowerCase() === "i") {
+        append("i");
+        e.preventDefault();
+      } else if (k.toLowerCase() === "e") {
+        append("e");
+        e.preventDefault();
+      } else if (k.toLowerCase() === "p") {
+        append("π");
+        e.preventDefault();
+      } else if (k === "Backspace") {
+        del();
+        e.preventDefault();
+      } else if (k === "Enter" || k === "=") {
+        evalBuffer();
+        e.preventDefault();
+      } else if (k === "Escape") {
+        allClear();
+        e.preventDefault();
+      }
     });
+
+    // Initialize display
+    setDisplay('0');
   </script>
 </body>
 </html>
