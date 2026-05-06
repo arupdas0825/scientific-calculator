@@ -146,18 +146,10 @@ scientific-complex-calculator.html
 > Add your desktop screenshot here
 
 ```bash
-/assets/desktop-preview.png
+<img width="1449" height="867" alt="image" src="https://github.com/user-attachments/assets/07c49eb7-4f1a-4d6e-850e-b608fb16f9bf" />
+
 ```
 
-## Mobile UI
-
-> Add your mobile screenshot here
-
-```bash
-/assets/mobile-preview.png
-```
-
----
 
 # Performance
 
