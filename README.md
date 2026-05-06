@@ -144,8 +144,6 @@ scientific-complex-calculator.html
 ## Desktop UI
 
 > Add your desktop screenshot here
-
-```bash
 <img width="1449" height="867" alt="image" src="https://github.com/user-attachments/assets/07c49eb7-4f1a-4d6e-850e-b608fb16f9bf" />
 
 ```
