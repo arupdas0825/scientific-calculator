@@ -1,266 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Advanced Scientific Calculator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Professional Scientific Calculator</title>
 
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family: "Inter", sans-serif;
-    }
+<style>
 
-    body{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:
-      radial-gradient(circle at top left,#1f2937,#020617 60%);
-      overflow:hidden;
-      padding:20px;
-    }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter, sans-serif;
+}
 
-    .calculator{
-      width:420px;
-      background:rgba(15,23,42,0.75);
-      border:1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(20px);
-      border-radius:28px;
-      box-shadow:
-      0 20px 60px rgba(0,0,0,0.5),
-      inset 0 1px 1px rgba(255,255,255,0.08);
-      overflow:hidden;
-    }
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+  radial-gradient(circle at top left,#1e293b,#020617 60%);
+  padding:20px;
+}
 
-    .top{
-      padding:28px;
-      border-bottom:1px solid rgba(255,255,255,0.06);
-    }
+.calculator{
+  width:430px;
+  background:rgba(15,23,42,0.9);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:
+  0 20px 60px rgba(0,0,0,0.5);
+}
 
-    .brand{
-      color:#94a3b8;
-      font-size:13px;
-      letter-spacing:2px;
-      text-transform:uppercase;
-      margin-bottom:16px;
-    }
+.top{
+  padding:25px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
 
-    .display{
-      width:100%;
-      background:transparent;
-      border:none;
-      outline:none;
-      color:#fff;
-      text-align:right;
-      font-size:3rem;
-      font-weight:600;
-      min-height:70px;
-    }
+.brand{
+  color:#94a3b8;
+  font-size:13px;
+  letter-spacing:2px;
+  margin-bottom:16px;
+  text-transform:uppercase;
+}
 
-    .history{
-      text-align:right;
-      color:#64748b;
-      font-size:15px;
-      min-height:24px;
-      margin-bottom:8px;
-      overflow:hidden;
-    }
+.history{
+  min-height:24px;
+  color:#64748b;
+  text-align:right;
+  margin-bottom:10px;
+  font-size:14px;
+  overflow:auto;
+}
 
-    .buttons{
-      padding:20px;
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:14px;
-    }
+.display{
+  width:100%;
+  border:none;
+  background:transparent;
+  color:white;
+  font-size:2.8rem;
+  text-align:right;
+  outline:none;
+  min-height:70px;
+}
 
-    button{
-      border:none;
-      height:68px;
-      border-radius:18px;
-      font-size:18px;
-      font-weight:600;
-      cursor:pointer;
-      transition:0.2s ease;
-      color:white;
-      background:rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
-      box-shadow:
-      inset 0 1px 1px rgba(255,255,255,0.04),
-      0 6px 12px rgba(0,0,0,0.25);
-    }
+.buttons{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
 
-    button:hover{
-      transform:translateY(-2px);
-      background:rgba(255,255,255,0.08);
-    }
+button{
+  height:65px;
+  border:none;
+  border-radius:18px;
+  cursor:pointer;
+  color:white;
+  font-size:16px;
+  font-weight:600;
+  transition:0.2s;
+  background:rgba(255,255,255,0.05);
+}
 
-    button:active{
-      transform:scale(0.96);
-    }
+button:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,0.1);
+}
 
-    .operator{
-      background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    }
+button:active{
+  transform:scale(0.96);
+}
 
-    .equal{
-      background:linear-gradient(135deg,#06b6d4,#0891b2);
-      grid-column: span 2;
-    }
+.operator{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+}
 
-    .special{
-      background:linear-gradient(135deg,#7c3aed,#6d28d9);
-    }
+.special{
+  background:linear-gradient(135deg,#7c3aed,#6d28d9);
+}
 
-    .danger{
-      background:linear-gradient(135deg,#ef4444,#dc2626);
-    }
+.equal{
+  background:linear-gradient(135deg,#06b6d4,#0891b2);
+  grid-column:span 2;
+}
 
-    .footer{
-      padding:14px;
-      text-align:center;
-      color:#64748b;
-      font-size:12px;
-      border-top:1px solid rgba(255,255,255,0.05);
-    }
+.danger{
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+}
 
-    @media(max-width:480px){
-      .calculator{
-        width:100%;
-      }
+.footer{
+  padding:14px;
+  text-align:center;
+  color:#64748b;
+  border-top:1px solid rgba(255,255,255,0.05);
+  font-size:12px;
+}
 
-      button{
-        height:60px;
-        font-size:16px;
-      }
+@media(max-width:480px){
 
-      .display{
-        font-size:2.3rem;
-      }
-    }
-  </style>
+  .calculator{
+    width:100%;
+  }
+
+  button{
+    height:58px;
+    font-size:15px;
+  }
+
+  .display{
+    font-size:2.2rem;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
 
-  <div class="calculator">
+<div class="calculator">
 
-    <div class="top">
-      <div class="brand">Scientific Calculator</div>
+  <div class="top">
 
-      <div class="history" id="history"></div>
-
-      <input 
-        type="text"
-        class="display"
-        id="display"
-        readonly
-      />
+    <div class="brand">
+      Advanced Scientific Calculator
     </div>
 
-    <div class="buttons">
+    <div class="history" id="history"></div>
 
-      <button class="danger" onclick="clearDisplay()">AC</button>
-      <button class="special" onclick="append('(')">(</button>
-      <button class="special" onclick="append(')')">)</button>
-      <button class="special" onclick="append('%')">%</button>
-      <button class="operator" onclick="append('/')">÷</button>
-
-      <button onclick="append('7')">7</button>
-      <button onclick="append('8')">8</button>
-      <button onclick="append('9')">9</button>
-      <button class="special" onclick="append('Math.sqrt(')">√</button>
-      <button class="operator" onclick="append('*')">×</button>
-
-      <button onclick="append('4')">4</button>
-      <button onclick="append('5')">5</button>
-      <button onclick="append('6')">6</button>
-      <button class="special" onclick="append('**')">x²</button>
-      <button class="operator" onclick="append('-')">−</button>
-
-      <button onclick="append('1')">1</button>
-      <button onclick="append('2')">2</button>
-      <button onclick="append('3')">3</button>
-      <button class="special" onclick="append('Math.PI')">π</button>
-      <button class="operator" onclick="append('+')">+</button>
-
-      <button onclick="append('0')">0</button>
-      <button onclick="append('.')">.</button>
-      <button class="special" onclick="append('Math.E')">e</button>
-      <button class="special" onclick="append('Math.log10(')">log</button>
-      <button class="equal" onclick="calculate()">=</button>
-
-      <button class="special" onclick="append('Math.sin(')">sin</button>
-      <button class="special" onclick="append('Math.cos(')">cos</button>
-      <button class="special" onclick="append('Math.tan(')">tan</button>
-      <button class="special" onclick="append('Math.log(')">ln</button>
-      <button class="special" onclick="append('Math.pow(')">pow</button>
-
-    </div>
-
-    <div class="footer">
-      Advanced Glassmorphism Scientific Calculator UI
-    </div>
+    <input 
+      type="text"
+      class="display"
+      id="display"
+      readonly
+    />
 
   </div>
 
-  <script>
+  <div class="buttons">
 
-    const display = document.getElementById("display");
-    const history = document.getElementById("history");
+    <button class="danger" onclick="clearDisplay()">AC</button>
+    <button class="special" onclick="backspace()">⌫</button>
+    <button class="special" onclick="append('(')">(</button>
+    <button class="special" onclick="append(')')">)</button>
+    <button class="operator" onclick="append('/')">÷</button>
 
-    function append(value){
-      display.value += value;
+    <button onclick="append('7')">7</button>
+    <button onclick="append('8')">8</button>
+    <button onclick="append('9')">9</button>
+    <button class="special" onclick="append('%')">%</button>
+    <button class="operator" onclick="append('*')">×</button>
+
+    <button onclick="append('4')">4</button>
+    <button onclick="append('5')">5</button>
+    <button onclick="append('6')">6</button>
+    <button class="special" onclick="append('**2')">x²</button>
+    <button class="operator" onclick="append('-')">−</button>
+
+    <button onclick="append('1')">1</button>
+    <button onclick="append('2')">2</button>
+    <button onclick="append('3')">3</button>
+    <button class="special" onclick="append('**')">xʸ</button>
+    <button class="operator" onclick="append('+')">+</button>
+
+    <button onclick="append('0')">0</button>
+    <button onclick="append('.')">.</button>
+    <button class="special" onclick="append('Math.PI')">π</button>
+    <button class="special" onclick="append('Math.E')">e</button>
+    <button class="equal" onclick="calculate()">=</button>
+
+    <button class="special" onclick="append('sin(')">sin</button>
+    <button class="special" onclick="append('cos(')">cos</button>
+    <button class="special" onclick="append('tan(')">tan</button>
+    <button class="special" onclick="append('sqrt(')">√</button>
+    <button class="special" onclick="append('log(')">log</button>
+
+    <button class="special" onclick="append('ln(')">ln</button>
+    <button class="special" onclick="append('fact(')">x!</button>
+    <button class="special" onclick="append('abs(')">|x|</button>
+    <button class="special" onclick="append('1/')">1/x</button>
+    <button class="special" onclick="append('pow(')">pow</button>
+
+  </div>
+
+  <div class="footer">
+    Supports Advanced Scientific Calculations
+  </div>
+
+</div>
+
+<script>
+
+const display = document.getElementById("display");
+const history = document.getElementById("history");
+
+function append(value){
+  display.value += value;
+}
+
+function clearDisplay(){
+  display.value = "";
+  history.innerText = "";
+}
+
+function backspace(){
+  display.value = display.value.slice(0,-1);
+}
+
+function fact(n){
+
+  if(n < 0) return "Error";
+
+  if(n === 0 || n === 1) return 1;
+
+  let result = 1;
+
+  for(let i=2;i<=n;i++){
+    result *= i;
+  }
+
+  return result;
+}
+
+function sin(x){
+  return Math.sin(x * Math.PI / 180);
+}
+
+function cos(x){
+  return Math.cos(x * Math.PI / 180);
+}
+
+function tan(x){
+  return Math.tan(x * Math.PI / 180);
+}
+
+function sqrt(x){
+  return Math.sqrt(x);
+}
+
+function log(x){
+  return Math.log10(x);
+}
+
+function ln(x){
+  return Math.log(x);
+}
+
+function pow(x,y){
+  return Math.pow(x,y);
+}
+
+function abs(x){
+  return Math.abs(x);
+}
+
+function calculate(){
+
+  try{
+
+    let expression = display.value;
+
+    history.innerText = expression;
+
+    let result = eval(expression);
+
+    if(result === Infinity || result === -Infinity){
+      display.value = "Infinity";
+      return;
     }
 
-    function clearDisplay(){
-      display.value = "";
-      history.innerText = "";
+    if(isNaN(result)){
+      display.value = "Error";
+      return;
     }
 
-    function calculate(){
+    display.value = parseFloat(result.toFixed(10));
 
-      try{
+  }catch(error){
 
-        let expression = display.value;
+    display.value = "Syntax Error";
 
-        history.innerText = expression;
+  }
 
-        let result = eval(expression);
+}
 
-        display.value = result;
+document.addEventListener("keydown",(e)=>{
 
-      }catch(error){
+  if(
+    (e.key >= 0 && e.key <= 9) ||
+    "+-*/.%()".includes(e.key)
+  ){
+    append(e.key);
+  }
 
-        display.value = "Error";
+  else if(e.key === "Enter"){
+    calculate();
+  }
 
-      }
-    }
+  else if(e.key === "Backspace"){
+    backspace();
+  }
 
-    document.addEventListener("keydown",(e)=>{
+  else if(e.key.toLowerCase() === "c"){
+    clearDisplay();
+  }
 
-      if((e.key >= 0 && e.key <=9) || "+-*/.%()".includes(e.key)){
-        append(e.key);
-      }
+});
 
-      else if(e.key === "Enter"){
-        calculate();
-      }
-
-      else if(e.key === "Backspace"){
-        display.value = display.value.slice(0,-1);
-      }
-
-      else if(e.key.toLowerCase() === "c"){
-        clearDisplay();
-      }
-
-    });
-
-  </script>
+</script>
 
 </body>
 </html>
