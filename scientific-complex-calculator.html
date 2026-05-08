@@ -1,839 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Scientific Calculator</title>
-<script src="https://cdn.jsdelivr.net/npm/mathjs@12.4.2/lib/browser/math.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --body-dark:#1a1c1e;
-  --body-mid:#232528;
-  --body-light:#2d2f32;
-  --screen-bg:#c8d8b0;
-  --screen-dark:#8fa870;
-  --btn-dark:#1e1f21;
-  --btn-mid:#282a2c;
-  --btn-light:#333538;
-  --btn-top:#38393c;
-  --blue:#3a7bd5;
-  --orange:#e07b2a;
-  --green-key:#2e7d4f;
-  --red-key:#c0392b;
-  --text-top:#9fc8f0;
-  --text-orange:#e89840;
-  --text-green:#5dbf7d;
-  --text-white:#e8eaec;
-  --text-muted:#888a8d;
-  --border-hilight:rgba(255,255,255,0.12);
-  --border-shadow:rgba(0,0,0,0.6);
-  --font-main:'Barlow',sans-serif;
-  --font-mono:'Share Tech Mono',monospace;
-  --font-cond:'Barlow Condensed',sans-serif;
-}
-body{
-  min-height:100vh;
-  background:linear-gradient(160deg,#181a1c 0%,#101214 100%);
-  display:flex;align-items:center;justify-content:center;
-  padding:24px 12px;
-  font-family:var(--font-main);
-}
-.calc-body{
-  width:360px;
-  background:linear-gradient(170deg,var(--body-mid) 0%,var(--body-dark) 100%);
-  border-radius:12px 12px 20px 20px;
-  border-top:1px solid var(--border-hilight);
-  border-left:1px solid var(--border-hilight);
-  border-right:1px solid rgba(0,0,0,0.5);
-  border-bottom:1px solid rgba(0,0,0,0.7);
-  box-shadow:0 40px 80px rgba(0,0,0,0.85), 0 0 0 0.5px rgba(255,255,255,0.04) inset;
-  padding-bottom:18px;
-  position:relative;
-  overflow:hidden;
-}
-.calc-body::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
-}
-.brand-bar{
-  padding:14px 18px 10px;
-  display:flex;justify-content:space-between;align-items:flex-start;
-}
-.brand-casio{
-  font-family:var(--font-cond);
-  font-size:22px;font-weight:800;
-  letter-spacing:0.12em;
-  color:#dde0e3;
-  text-shadow:0 1px 0 rgba(0,0,0,0.5);
-}
-.brand-model{
-  text-align:right;
-}
-.brand-model .model{
-  font-family:var(--font-cond);
-  font-size:11px;font-weight:600;
-  color:var(--text-muted);
-  letter-spacing:0.08em;
-  display:block;
-}
-.brand-model .tagline{
-  font-size:8.5px;font-weight:600;
-  color:var(--blue);
-  letter-spacing:0.15em;
-  text-transform:uppercase;
-  display:block;margin-top:2px;
-}
-.screen-housing{
-  margin:0 14px 12px;
-  background:#111314;
-  border-radius:4px;
-  padding:6px;
-  border:1px solid rgba(0,0,0,0.7);
-  box-shadow:0 2px 8px rgba(0,0,0,0.5) inset,0 1px 0 rgba(255,255,255,0.06);
-}
-.screen{
-  background:var(--screen-bg);
-  border-radius:3px;
-  padding:8px 10px 10px;
-  min-height:80px;
-  box-shadow:0 0 0 1px rgba(0,0,0,0.2) inset, 0 2px 6px rgba(0,0,0,0.3) inset;
-  position:relative;
-  overflow:hidden;
-}
-.screen::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:40%;
-  background:rgba(255,255,255,0.07);
-  pointer-events:none;
-  border-radius:3px 3px 0 0;
-}
-.screen-indicators{
-  display:flex;gap:6px;margin-bottom:4px;
-  font-family:var(--font-mono);font-size:8px;
-  color:#4a6030;
-  flex-wrap:wrap;
-}
-.ind{
-  padding:0 3px;font-size:7.5px;
-  letter-spacing:0.03em;
-  opacity:0;transition:opacity 0.15s;
-}
-.ind.on{opacity:1;}
-.screen-expr{
-  min-height:20px;
-  font-family:var(--font-mono);
-  font-size:12px;
-  color:#3a5020;
-  text-align:right;
-  white-space:nowrap;overflow-x:auto;
-  scrollbar-width:none;
-  letter-spacing:0.02em;
-  line-height:1.4;
-  padding-right:2px;
-}
-.screen-expr::-webkit-scrollbar{display:none;}
-.screen-result{
-  text-align:right;
-  font-family:var(--font-mono);
-  font-size:24px;
-  color:#1a3010;
-  font-weight:400;
-  letter-spacing:-0.01em;
-  white-space:nowrap;overflow-x:auto;
-  scrollbar-width:none;
-  min-height:32px;
-  line-height:1.3;
-  padding-right:2px;
-}
-.screen-result::-webkit-scrollbar{display:none;}
-.btn-area{
-  padding:0 10px;
-}
-.btn-row{
-  display:flex;gap:6px;
-  margin-bottom:6px;
-}
-.btn-row:last-child{margin-bottom:0;}
-.key{
-  flex:1;
-  border:none;outline:none;
-  cursor:pointer;
-  border-radius:4px;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  position:relative;
-  transition:transform 0.07s,filter 0.07s;
-  user-select:none;
-  overflow:hidden;
-  padding:0;
-}
-.key:active{
-  transform:scale(0.95) translateY(1px);
-  filter:brightness(0.85);
-}
-.key-inner{
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  width:100%;height:100%;
-  padding:4px 2px 5px;
-}
-.key-top-label{
-  font-size:6.5px;font-weight:600;
-  letter-spacing:0.04em;
-  line-height:1;
-  height:10px;
-  display:flex;align-items:center;justify-content:center;
-  width:100%;
-}
-.key-main-label{
-  font-family:var(--font-cond);
-  font-size:13px;font-weight:600;
-  line-height:1;
-  text-align:center;
-  letter-spacing:0.01em;
-}
-.key-main-label.small{font-size:10px;}
-.key-main-label.xsmall{font-size:8.5px;}
-.key-bottom-label{
-  font-size:6px;font-weight:600;
-  letter-spacing:0.04em;
-  color:var(--text-green);
-  line-height:1;
-  height:9px;
-  display:flex;align-items:center;justify-content:center;
-  width:100%;
-  margin-top:1px;
-}
-/* Dark base keys */
-.key-dark{
-  background:linear-gradient(180deg,var(--btn-top) 0%,var(--btn-dark) 100%);
-  border-top:1px solid rgba(255,255,255,0.12);
-  border-bottom:2px solid rgba(0,0,0,0.7);
-  box-shadow:0 2px 3px rgba(0,0,0,0.5);
-}
-/* Blue keys (ops) */
-.key-blue{
-  background:linear-gradient(180deg,#4a8be0 0%,#2e68c0 100%);
-  border-top:1px solid rgba(255,255,255,0.25);
-  border-bottom:2px solid rgba(0,0,0,0.5);
-  box-shadow:0 2px 4px rgba(0,0,0,0.45);
-}
-/* Special wide keys */
-.key-del{
-  background:linear-gradient(180deg,#d44a3a 0%,#a03020 100%);
-  border-top:1px solid rgba(255,255,255,0.2);
-  border-bottom:2px solid rgba(0,0,0,0.5);
-}
-.key-ac{
-  background:linear-gradient(180deg,#e07830 0%,#b85a18 100%);
-  border-top:1px solid rgba(255,255,255,0.2);
-  border-bottom:2px solid rgba(0,0,0,0.5);
-}
-.key-equals{
-  background:linear-gradient(180deg,#e07830 0%,#b85a18 100%);
-  border-top:1px solid rgba(255,255,255,0.2);
-  border-bottom:2px solid rgba(0,0,0,0.5);
-  height:100%;
-  flex:1;
-}
-/* Height variants */
-.h36{height:36px;}
-.h32{height:32px;}
-.h30{height:30px;}
-/* Colors for labels */
-.c-white{color:#e8eaec;}
-.c-orange{color:var(--text-orange);}
-.c-blue-text{color:var(--text-top);}
-.c-green-text{color:var(--text-green);}
-.c-muted{color:var(--text-muted);}
-/* Navigation cluster */
-.nav-cluster{
-  display:grid;
-  grid-template-columns:32px 32px 32px;
-  grid-template-rows:28px 28px 28px;
-  gap:4px;
-  align-self:center;
-}
-.nav-btn{
-  border:none;outline:none;cursor:pointer;
-  border-radius:50%;
-  background:linear-gradient(180deg,var(--btn-top),var(--btn-dark));
-  border-top:1px solid rgba(255,255,255,0.1);
-  border-bottom:1.5px solid rgba(0,0,0,0.6);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:var(--text-white);
-  transition:transform 0.07s,filter 0.07s;
-  user-select:none;
-  font-family:var(--font-main);
-}
-.nav-btn:active{transform:scale(0.92);filter:brightness(0.8);}
-.nav-center{
-  background:linear-gradient(180deg,#444,#2a2a2a);
-  font-size:8px;font-weight:700;
-  letter-spacing:0.05em;
-  color:var(--text-muted);
-}
-.nav-row{
-  display:flex;justify-content:center;gap:4px;margin-bottom:6px;
-}
-/* Top strip */
-.top-strip{
-  padding:6px 10px 8px;
-}
-.mode-labels{
-  display:flex;justify-content:center;gap:12px;
-  font-size:7px;font-weight:700;
-  letter-spacing:0.14em;
-  color:var(--text-muted);
-  margin-bottom:6px;
-  text-transform:uppercase;
-}
-.mode-labels span{padding:2px 0;}
-.mode-active{color:var(--text-orange);}
-.shift-alpha-row{
-  display:flex;gap:6px;margin-bottom:0;
-}
-/* Divider */
-.divider{
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);
-  margin:4px 10px 8px;
-}
-/* Second row function keys */
-.fn-sub{
-  font-size:7px;
-  color:var(--text-top);
-  font-family:var(--font-mono);
-  margin-bottom:1px;
-  letter-spacing:0.02em;
-  height:9px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Scientific Calculator</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family: "Inter", sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+      radial-gradient(circle at top left,#1f2937,#020617 60%);
+      overflow:hidden;
+      padding:20px;
+    }
+
+    .calculator{
+      width:420px;
+      background:rgba(15,23,42,0.75);
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      border-radius:28px;
+      box-shadow:
+      0 20px 60px rgba(0,0,0,0.5),
+      inset 0 1px 1px rgba(255,255,255,0.08);
+      overflow:hidden;
+    }
+
+    .top{
+      padding:28px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .brand{
+      color:#94a3b8;
+      font-size:13px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin-bottom:16px;
+    }
+
+    .display{
+      width:100%;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:#fff;
+      text-align:right;
+      font-size:3rem;
+      font-weight:600;
+      min-height:70px;
+    }
+
+    .history{
+      text-align:right;
+      color:#64748b;
+      font-size:15px;
+      min-height:24px;
+      margin-bottom:8px;
+      overflow:hidden;
+    }
+
+    .buttons{
+      padding:20px;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:14px;
+    }
+
+    button{
+      border:none;
+      height:68px;
+      border-radius:18px;
+      font-size:18px;
+      font-weight:600;
+      cursor:pointer;
+      transition:0.2s ease;
+      color:white;
+      background:rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.04),
+      0 6px 12px rgba(0,0,0,0.25);
+    }
+
+    button:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,0.08);
+    }
+
+    button:active{
+      transform:scale(0.96);
+    }
+
+    .operator{
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    }
+
+    .equal{
+      background:linear-gradient(135deg,#06b6d4,#0891b2);
+      grid-column: span 2;
+    }
+
+    .special{
+      background:linear-gradient(135deg,#7c3aed,#6d28d9);
+    }
+
+    .danger{
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+    }
+
+    .footer{
+      padding:14px;
+      text-align:center;
+      color:#64748b;
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,0.05);
+    }
+
+    @media(max-width:480px){
+      .calculator{
+        width:100%;
+      }
+
+      button{
+        height:60px;
+        font-size:16px;
+      }
+
+      .display{
+        font-size:2.3rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="calc-body">
-  <!-- Brand Bar -->
-  <div class="brand-bar">
-    <div class="brand-casio">SCI-CALC</div>
-    <div class="brand-model">
-      <span class="model">Scientific Calculator</span>
-      <span class="tagline">NATURAL-V.P.A.M.</span>
-    </div>
-  </div>
+  <div class="calculator">
 
-  <!-- Screen -->
-  <div class="screen-housing">
-    <div class="screen">
-      <div class="screen-indicators">
-        <span class="ind" id="ind-s">S</span>
-        <span class="ind" id="ind-a">A</span>
-        <span class="ind" id="ind-m">M</span>
-        <span class="ind" id="ind-sto">STO</span>
-        <span class="ind" id="ind-rcl">RCL</span>
-        <span style="flex:1"></span>
-        <span class="ind on" id="ind-d">D</span>
-        <span class="ind" id="ind-r">R</span>
-        <span class="ind" id="ind-g">G</span>
-      </div>
-      <div class="screen-expr" id="expr-display"></div>
-      <div class="screen-result" id="result-display">0</div>
-    </div>
-  </div>
+    <div class="top">
+      <div class="brand">Scientific Calculator</div>
 
-  <!-- SHIFT / ALPHA + Mode row -->
-  <div class="top-strip">
-    <div class="shift-alpha-row">
-      <button class="key key-dark h32" style="max-width:52px;" onclick="toggleShift()">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-orange" style="font-size:11px;letter-spacing:0.06em;">SHIFT</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" style="max-width:52px;" onclick="toggleAlpha()">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-blue-text" style="font-size:11px;letter-spacing:0.06em;">ALPHA</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="noop()">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">STAT</div>
-          <div class="key-main-label c-white small">MODE</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="noop()">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">SETUP</div>
-          <div class="key-main-label c-white small">MENU</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="noop()">
-        <div class="key-inner">
-          <div class="key-top-label c-blue-text">OFF</div>
-          <div class="key-main-label c-white small">ON</div>
-        </div>
-      </button>
-    </div>
-  </div>
+      <div class="history" id="history"></div>
 
-  <div class="divider"></div>
-
-  <!-- Navigation + Function Row -->
-  <div class="btn-area">
-
-    <!-- Arrow nav + calc keys row -->
-    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
-      <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-        <button class="key key-dark h30" onclick="appendCalc('Ans')">
-          <div class="key-inner">
-            <div class="key-top-label c-orange">DRG►</div>
-            <div class="key-main-label c-white small">Ans</div>
-          </div>
-        </button>
-      </div>
-      <!-- Nav cluster -->
-      <div class="nav-cluster">
-        <div></div>
-        <button class="nav-btn" onclick="moveCursor(-1)">▲</button>
-        <div></div>
-        <button class="nav-btn" onclick="moveCursor(-1)">◄</button>
-        <button class="nav-btn nav-center">CALC</button>
-        <button class="nav-btn" onclick="moveCursor(1)">►</button>
-        <div></div>
-        <button class="nav-btn" onclick="moveCursor(1)">▼</button>
-        <div></div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-        <button class="key key-del h30" onclick="doDelete()">
-          <div class="key-inner">
-            <div class="key-top-label c-white">INS</div>
-            <div class="key-main-label c-white small">DEL</div>
-          </div>
-        </button>
-        <button class="key key-ac h30" onclick="clearAll()">
-          <div class="key-inner">
-            <div class="key-top-label c-white" style="font-size:5.5px;">CLR</div>
-            <div class="key-main-label c-white small">AC</div>
-          </div>
-        </button>
-      </div>
+      <input 
+        type="text"
+        class="display"
+        id="display"
+        readonly
+      />
     </div>
 
-    <!-- Row: x^-1  x^2  x^3  x^y  sqrt  cbrt -->
-    <div class="btn-row">
-      <button class="key key-dark h32" onclick="appendCalc('^(-1)')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">3√</div>
-          <div class="key-main-label c-white xsmall">x⁻¹</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('^2')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">x!</div>
-          <div class="key-main-label c-white xsmall">x²</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('^3')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">nPr</div>
-          <div class="key-main-label c-white xsmall">x³</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('^')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">nCr</div>
-          <div class="key-main-label c-white xsmall">xʸ</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('log10(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">10^x</div>
-          <div class="key-main-label c-white xsmall">log</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('log(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">e^x</div>
-          <div class="key-main-label c-white xsmall">ln</div>
-        </div>
-      </button>
+    <div class="buttons">
+
+      <button class="danger" onclick="clearDisplay()">AC</button>
+      <button class="special" onclick="append('(')">(</button>
+      <button class="special" onclick="append(')')">)</button>
+      <button class="special" onclick="append('%')">%</button>
+      <button class="operator" onclick="append('/')">÷</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button class="special" onclick="append('Math.sqrt(')">√</button>
+      <button class="operator" onclick="append('*')">×</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button class="special" onclick="append('**')">x²</button>
+      <button class="operator" onclick="append('-')">−</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button class="special" onclick="append('Math.PI')">π</button>
+      <button class="operator" onclick="append('+')">+</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button class="special" onclick="append('Math.E')">e</button>
+      <button class="special" onclick="append('Math.log10(')">log</button>
+      <button class="equal" onclick="calculate()">=</button>
+
+      <button class="special" onclick="append('Math.sin(')">sin</button>
+      <button class="special" onclick="append('Math.cos(')">cos</button>
+      <button class="special" onclick="append('Math.tan(')">tan</button>
+      <button class="special" onclick="append('Math.log(')">ln</button>
+      <button class="special" onclick="append('Math.pow(')">pow</button>
+
     </div>
 
-    <!-- Row: sqrt  cbrt  bracket  M+ mem  S<>D -->
-    <div class="btn-row">
-      <button class="key key-dark h32" onclick="appendCalc('sqrt(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">x²</div>
-          <div class="key-main-label c-white xsmall">√</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('cbrt(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">x³</div>
-          <div class="key-main-label c-white xsmall">∛</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('(')">
-        <div class="key-inner">
-          <div class="key-top-label c-blue-text">{</div>
-          <div class="key-main-label c-white xsmall">( )</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="storeMemory()">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">STO</div>
-          <div class="key-main-label c-white xsmall">M+</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="recallMemory()">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">VARS</div>
-          <div class="key-main-label c-white xsmall">RCL</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="toggleDegRad()">
-        <div class="key-inner">
-          <div class="key-top-label c-blue-text">DEG</div>
-          <div class="key-main-label c-white" style="font-size:7.5px;">S⟺D</div>
-        </div>
-      </button>
-    </div>
-
-    <!-- Row: sin cos tan  pi  abs -->
-    <div class="btn-row">
-      <button class="key key-dark h32" onclick="appendCalc('sin(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">sin⁻¹</div>
-          <div class="key-main-label c-white xsmall">sin</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('cos(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">cos⁻¹</div>
-          <div class="key-main-label c-white xsmall">cos</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('tan(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">tan⁻¹</div>
-          <div class="key-main-label c-white xsmall">tan</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('pi')">
-        <div class="key-inner">
-          <div class="key-top-label c-blue-text">e</div>
-          <div class="key-main-label c-white" style="font-size:15px;margin-top:-1px;">π</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('abs(')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">Ran#</div>
-          <div class="key-main-label c-white xsmall">|x|</div>
-        </div>
-      </button>
-      <button class="key key-dark h32" onclick="appendCalc('!')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">Pol(</div>
-          <div class="key-main-label c-white xsmall">n!</div>
-        </div>
-      </button>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- Num rows: 7 8 9  DEL  ÷ -->
-    <div class="btn-row">
-      <button class="key key-dark h36" onclick="appendCalc('7')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">7</div>
-          <div class="key-bottom-label">HYP</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('8')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">8</div>
-          <div class="key-bottom-label">sinh</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('9')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">9</div>
-          <div class="key-bottom-label">cosh</div>
-        </div>
-      </button>
-      <button class="key key-del h36" onclick="doDelete()">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;">INS</div>
-          <div class="key-main-label c-white">DEL</div>
-        </div>
-      </button>
-      <button class="key key-blue h36" onclick="appendCalc('/')">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;">a b/c</div>
-          <div class="key-main-label c-white" style="font-size:17px;">÷</div>
-        </div>
-      </button>
-    </div>
-
-    <!-- 4 5 6  AC  × -->
-    <div class="btn-row">
-      <button class="key key-dark h36" onclick="appendCalc('4')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">4</div>
-          <div class="key-bottom-label">tanh</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('5')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">5</div>
-          <div class="key-bottom-label">sinh⁻¹</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('6')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">6</div>
-          <div class="key-bottom-label">cosh⁻¹</div>
-        </div>
-      </button>
-      <button class="key key-ac h36" onclick="clearAll()">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;">CLR</div>
-          <div class="key-main-label c-white">AC</div>
-        </div>
-      </button>
-      <button class="key key-blue h36" onclick="appendCalc('*')">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;">×10ˣ</div>
-          <div class="key-main-label c-white" style="font-size:17px;">×</div>
-        </div>
-      </button>
-    </div>
-
-    <!-- 1 2 3  (blank)  − -->
-    <div class="btn-row">
-      <button class="key key-dark h36" onclick="appendCalc('1')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">1</div>
-          <div class="key-bottom-label">tanh⁻¹</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('2')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">2</div>
-          <div class="key-bottom-label">ENG</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('3')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">3</div>
-          <div class="key-bottom-label">←</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('e')">
-        <div class="key-inner">
-          <div class="key-top-label c-blue-text">π</div>
-          <div class="key-main-label c-white xsmall">e</div>
-        </div>
-      </button>
-      <button class="key key-blue h36" onclick="appendCalc('-')">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;">Rec(</div>
-          <div class="key-main-label c-white" style="font-size:20px;line-height:1;">−</div>
-        </div>
-      </button>
-    </div>
-
-    <!-- 0  .  ×10^  Ans  = + (tall) -->
-    <div class="btn-row" style="align-items:stretch;">
-      <button class="key key-dark" style="height:36px;flex:2;" onclick="appendCalc('0')">
-        <div class="key-inner">
-          <div class="key-top-label"></div>
-          <div class="key-main-label c-white">0</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('.')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">%</div>
-          <div class="key-main-label c-white" style="font-size:18px;">·</div>
-        </div>
-      </button>
-      <button class="key key-dark h36" onclick="appendCalc('*10^')">
-        <div class="key-inner">
-          <div class="key-top-label c-orange">EXP</div>
-          <div class="key-main-label c-white" style="font-size:9px;">×10ˣ</div>
-        </div>
-      </button>
-      <button class="key key-blue h36" onclick="appendCalc('+')">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:5.5px;"></div>
-          <div class="key-main-label c-white" style="font-size:20px;line-height:1;">+</div>
-        </div>
-      </button>
-      <button class="key key-ac h36" onclick="calculate()">
-        <div class="key-inner">
-          <div class="key-top-label c-white" style="font-size:6px;">%</div>
-          <div class="key-main-label c-white" style="font-size:17px;">=</div>
-        </div>
-      </button>
+    <div class="footer">
+      Advanced Glassmorphism Scientific Calculator UI
     </div>
 
   </div>
-</div>
 
-<script>
-const exprEl = document.getElementById('expr-display');
-const resultEl = document.getElementById('result-display');
-const indS = document.getElementById('ind-s');
-const indA = document.getElementById('ind-a');
-const indD = document.getElementById('ind-d');
-const indR = document.getElementById('ind-r');
+  <script>
 
-let current = '';
-let lastResult = null;
-let memory = 0;
-let isRad = false;
-let shiftOn = false;
-let alphaOn = false;
-let justCalced = false;
+    const display = document.getElementById("display");
+    const history = document.getElementById("history");
 
-function updateDisplay(){
-  exprEl.textContent = current;
-  exprEl.scrollLeft = exprEl.scrollWidth;
-}
+    function append(value){
+      display.value += value;
+    }
 
-function appendCalc(v){
-  if(justCalced && /^[\d(piπe]/.test(v)){
-    current = '';
-  }
-  justCalced = false;
-  current += v;
-  updateDisplay();
-}
+    function clearDisplay(){
+      display.value = "";
+      history.innerText = "";
+    }
 
-function doDelete(){
-  current = current.slice(0,-1);
-  updateDisplay();
-}
+    function calculate(){
 
-function clearAll(){
-  current = '';
-  lastResult = null;
-  resultEl.textContent = '0';
-  exprEl.textContent = '';
-  justCalced = false;
-}
+      try{
 
-function moveCursor(){}
-function noop(){}
+        let expression = display.value;
 
-function storeMemory(){
-  const v = parseFloat(resultEl.textContent);
-  if(!isNaN(v)){memory = v; document.getElementById('ind-m').classList.add('on');}
-}
+        history.innerText = expression;
 
-function recallMemory(){
-  current += memory.toString();
-  updateDisplay();
-}
+        let result = eval(expression);
 
-function toggleShift(){
-  shiftOn = !shiftOn;
-  indS.classList.toggle('on', shiftOn);
-}
+        display.value = result;
 
-function toggleAlpha(){
-  alphaOn = !alphaOn;
-  indA.classList.toggle('on', alphaOn);
-}
+      }catch(error){
 
-function toggleDegRad(){
-  isRad = !isRad;
-  indD.classList.toggle('on', !isRad);
-  indR.classList.toggle('on', isRad);
-}
+        display.value = "Error";
 
-function preprocess(expr){
-  let e = expr
-    .replace(/÷/g,'/')
-    .replace(/×/g,'*')
-    .replace(/−/g,'-')
-    .replace(/π/g,'pi')
-    .replace(/\*10\^/g,'*10^')
-    .replace(/cbrt\(/g,'nthRoot(')
-    .replace(/(\d)(pi|e\b)/g,'$1*$2')
-    .replace(/(\d)\(/g,'$1*(')
-    .replace(/\)(\d)/g,')*$1')
-    .replace(/\)\(/g,')*(')
-    .replace(/(\d+)!/g,'factorial($1)');
+      }
+    }
 
-  if(!isRad){
-    e = e.replace(/\bsin\(/g,'sin(');
-    e = e.replace(/\bcos\(/g,'cos(');
-    e = e.replace(/\btan\(/g,'tan(');
-  }
-  return e;
-}
+    document.addEventListener("keydown",(e)=>{
 
-function formatResult(val){
-  if(typeof val === 'number'){
-    if(!isFinite(val)) return val > 0 ? '∞' : '-∞';
-    if(Math.abs(val) < 1e-12 && val !== 0) return '0';
-    const s = Number(val.toPrecision(10)).toString();
-    return s;
-  }
-  if(math.typeOf(val) === 'Complex'){
-    const re = Number(val.re.toPrecision(8));
-    const im = Number(val.im.toPrecision(8));
-    if(Math.abs(im) < 1e-10) return re.toString();
-    if(Math.abs(re) < 1e-10) return im + 'i';
-    return re + (im >= 0 ? '+' : '') + im + 'i';
-  }
-  return val.toString();
-}
+      if((e.key >= 0 && e.key <=9) || "+-*/.%()".includes(e.key)){
+        append(e.key);
+      }
 
-function calculate(){
-  if(!current.trim()) return;
-  const scope = isRad
-    ? { config: { angle: 'rad' } }
-    : { config: { angle: 'deg' } };
+      else if(e.key === "Enter"){
+        calculate();
+      }
 
-  try{
-    const mathConfig = isRad
-      ? math.create ? math : math
-      : math;
-    const processed = preprocess(current);
-    const result = math.evaluate(processed, {config: {angle: isRad ? 'rad' : 'deg'}});
-    const formatted = formatResult(result);
-    exprEl.textContent = current + ' =';
-    resultEl.textContent = formatted;
-    lastResult = result;
-    justCalced = true;
-    current = formatted === 'Error' ? '' : formatted;
-  }catch(err){
-    resultEl.textContent = 'Math ERROR';
-    justCalced = true;
-  }
-}
+      else if(e.key === "Backspace"){
+        display.value = display.value.slice(0,-1);
+      }
 
-document.addEventListener('keydown', e => {
-  const k = e.key;
-  if(/^[0-9+\-*/.()\^]$/.test(k)) appendCalc(k);
-  else if(k === 'Enter'){ e.preventDefault(); calculate(); }
-  else if(k === 'Backspace') doDelete();
-  else if(k === 'Escape') clearAll();
-});
-</script>
+      else if(e.key.toLowerCase() === "c"){
+        clearDisplay();
+      }
+
+    });
+
+  </script>
+
 </body>
 </html>
