@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Scientific Calculator</title>
+<title>AI Scientific Calculator Pro</title>
 
 <!-- MATH.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
@@ -33,13 +33,13 @@ body{
     padding:20px;
 }
 
-/* ================= MAIN ================= */
+/* ================= WRAPPER ================= */
 
 .wrapper{
 
     display:flex;
 
-    gap:20px;
+    gap:24px;
 
     align-items:flex-start;
 
@@ -50,25 +50,27 @@ body{
 
 .calculator{
 
-    width:430px;
+    width:470px;
 
-    background:rgba(15,23,42,0.95);
+    background:rgba(15,23,42,0.96);
 
-    border-radius:28px;
+    border-radius:30px;
 
     overflow:hidden;
 
     border:1px solid rgba(255,255,255,0.06);
 
     box-shadow:
-    0 25px 70px rgba(0,0,0,0.55);
+    0 30px 80px rgba(0,0,0,0.55);
 }
 
 /* ================= DISPLAY ================= */
 
 .top{
 
-    padding:28px;
+    padding:30px 25px;
+
+    border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 .title{
@@ -92,9 +94,11 @@ body{
 
     min-height:22px;
 
-    margin-bottom:10px;
+    margin-bottom:12px;
 
     overflow-x:auto;
+
+    font-size:15px;
 }
 
 .display{
@@ -116,26 +120,50 @@ body{
     font-weight:700;
 }
 
-/* ================= BUTTONS ================= */
+/* ================= KEYPAD ================= */
 
-.buttons{
+.keypad{
 
     padding:20px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+}
+
+/* ================= SCIENTIFIC ROW ================= */
+
+.scientific-grid{
 
     display:grid;
 
     grid-template-columns:repeat(5,1fr);
 
+    gap:12px;
+}
+
+/* ================= MAIN GRID ================= */
+
+.main-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
     gap:14px;
 }
 
-button{
+/* ================= BUTTON ================= */
 
-    height:66px;
+button{
 
     border:none;
 
-    border-radius:18px;
+    height:68px;
+
+    border-radius:20px;
 
     cursor:pointer;
 
@@ -162,7 +190,7 @@ button:active{
     transform:scale(0.96);
 }
 
-/* ================= COLORS ================= */
+/* ================= TYPES ================= */
 
 .number{
 
@@ -171,22 +199,33 @@ button:active{
 
 .operator{
 
-    background:linear-gradient(135deg,#0ea5e9,#0284c7);
+    background:
+    linear-gradient(135deg,#0ea5e9,#0284c7);
 }
 
 .function{
 
-    background:linear-gradient(135deg,#6366f1,#4f46e5);
+    background:
+    linear-gradient(135deg,#6366f1,#4f46e5);
 }
 
 .clear{
 
-    background:linear-gradient(135deg,#ef4444,#dc2626);
+    background:
+    linear-gradient(135deg,#ef4444,#dc2626);
 }
 
 .equal{
 
-    background:linear-gradient(135deg,#14b8a6,#0f766e);
+    background:
+    linear-gradient(135deg,#14b8a6,#0f766e);
+
+    height:150px;
+
+    grid-row:span 2;
+}
+
+.zero{
 
     grid-column:span 2;
 }
@@ -195,13 +234,13 @@ button:active{
 
 .side-panel{
 
-    width:280px;
+    width:290px;
 
-    background:rgba(15,23,42,0.95);
+    background:rgba(15,23,42,0.96);
 
-    border-radius:24px;
+    border-radius:26px;
 
-    padding:20px;
+    padding:22px;
 
     border:1px solid rgba(255,255,255,0.06);
 
@@ -217,7 +256,7 @@ button:active{
 
     font-size:18px;
 
-    font-weight:600;
+    font-weight:700;
 }
 
 .history-list{
@@ -228,7 +267,7 @@ button:active{
 
     gap:12px;
 
-    max-height:600px;
+    max-height:650px;
 
     overflow:auto;
 }
@@ -237,9 +276,9 @@ button:active{
 
     background:#0f172a;
 
-    border-radius:16px;
+    border-radius:18px;
 
-    padding:14px;
+    padding:15px;
 
     cursor:pointer;
 
@@ -290,7 +329,7 @@ button:active{
 
 /* ================= MOBILE ================= */
 
-@media(max-width:900px){
+@media(max-width:980px){
 
     .wrapper{
 
@@ -303,7 +342,7 @@ button:active{
     }
 }
 
-@media(max-width:480px){
+@media(max-width:520px){
 
     .calculator{
 
@@ -312,14 +351,19 @@ button:active{
 
     button{
 
-        height:58px;
+        height:60px;
 
         font-size:15px;
     }
 
+    .equal{
+
+        height:134px;
+    }
+
     .display{
 
-        font-size:2.2rem;
+        font-size:2.3rem;
     }
 }
 
@@ -330,14 +374,16 @@ button:active{
 
 <div class="wrapper">
 
-    <!-- CALCULATOR -->
+    <!-- ================= CALCULATOR ================= -->
 
     <div class="calculator">
+
+        <!-- DISPLAY -->
 
         <div class="top">
 
             <div class="title">
-                AI Scientific Calculator
+                AI Scientific Calculator Pro
             </div>
 
             <div 
@@ -354,87 +400,99 @@ button:active{
 
         </div>
 
-        <!-- BUTTONS -->
+        <!-- KEYPAD -->
 
-        <div class="buttons">
+        <div class="keypad">
 
-            <button class="clear" onclick="clearDisplay()">AC</button>
+            <!-- SCIENTIFIC FUNCTIONS -->
 
-            <button class="function" onclick="backspace()">⌫</button>
+            <div class="scientific-grid">
 
-            <button class="function" onclick="append('(')">(</button>
+                <button class="function" onclick="append('sin(')">sin</button>
 
-            <button class="function" onclick="append(')')">)</button>
+                <button class="function" onclick="append('cos(')">cos</button>
 
-            <button class="operator" onclick="append('/')">÷</button>
+                <button class="function" onclick="append('tan(')">tan</button>
 
-            <button class="function" onclick="append('sin(')">sin</button>
+                <button class="function" onclick="append('log(')">log</button>
 
-            <button class="function" onclick="append('cos(')">cos</button>
+                <button class="function" onclick="append('ln(')">ln</button>
 
-            <button class="function" onclick="append('tan(')">tan</button>
+                <button class="function" onclick="append('sqrt(')">√</button>
 
-            <button class="function" onclick="append('log(')">log</button>
+                <button class="function" onclick="append('^')">xʸ</button>
 
-            <button class="operator" onclick="append('*')">×</button>
+                <button class="function" onclick="append('!')">x!</button>
 
-            <button class="function" onclick="append('sqrt(')">√</button>
+                <button class="function" onclick="append('pi')">π</button>
 
-            <button class="function" onclick="append('ln(')">ln</button>
+                <button class="function" onclick="append('e')">e</button>
 
-            <button class="function" onclick="append('!')">x!</button>
+            </div>
 
-            <button class="function" onclick="append('%')">%</button>
+            <!-- MAIN CALCULATOR -->
 
-            <button class="operator" onclick="append('-')">−</button>
+            <div class="main-grid">
 
-            <button class="number" onclick="append('7')">7</button>
+                <!-- ROW 1 -->
 
-            <button class="number" onclick="append('8')">8</button>
+                <button class="clear" onclick="clearDisplay()">AC</button>
 
-            <button class="number" onclick="append('9')">9</button>
+                <button class="function" onclick="backspace()">⌫</button>
 
-            <button class="function" onclick="append('^')">xʸ</button>
+                <button class="function" onclick="append('(')">(</button>
 
-            <button class="operator" onclick="append('+')">+</button>
+                <button class="operator" onclick="append('/')">÷</button>
 
-            <button class="number" onclick="append('4')">4</button>
+                <!-- ROW 2 -->
 
-            <button class="number" onclick="append('5')">5</button>
+                <button class="number" onclick="append('7')">7</button>
 
-            <button class="number" onclick="append('6')">6</button>
+                <button class="number" onclick="append('8')">8</button>
 
-            <button class="function" onclick="append('pi')">π</button>
+                <button class="number" onclick="append('9')">9</button>
 
-            <button class="function" onclick="append('e')">e</button>
+                <button class="operator" onclick="append('*')">×</button>
 
-            <button class="number" onclick="append('1')">1</button>
+                <!-- ROW 3 -->
 
-            <button class="number" onclick="append('2')">2</button>
+                <button class="number" onclick="append('4')">4</button>
 
-            <button class="number" onclick="append('3')">3</button>
+                <button class="number" onclick="append('5')">5</button>
 
-            <button class="function" onclick="append('abs(')">|x|</button>
+                <button class="number" onclick="append('6')">6</button>
 
-            <button class="function" onclick="append('ans')">Ans</button>
+                <button class="operator" onclick="append('-')">−</button>
 
-            <button class="number" onclick="append('0')">0</button>
+                <!-- ROW 4 -->
 
-            <button class="number" onclick="append('.')">.</button>
+                <button class="number" onclick="append('1')">1</button>
 
-            <button class="function" onclick="append('sqrt(')">√x</button>
+                <button class="number" onclick="append('2')">2</button>
 
-            <button class="equal" onclick="calculate()">=</button>
+                <button class="number" onclick="append('3')">3</button>
+
+                <button class="operator" onclick="append('+')">+</button>
+
+                <!-- ROW 5 -->
+
+                <button class="number zero" onclick="append('0')">0</button>
+
+                <button class="number" onclick="append('.')">.</button>
+
+                <button class="equal" onclick="calculate()">=</button>
+
+            </div>
 
         </div>
 
         <div class="footer">
-            Smart Syntax + History System Enabled
+            Better Button Layout + Smart History System
         </div>
 
     </div>
 
-    <!-- HISTORY -->
+    <!-- ================= HISTORY PANEL ================= -->
 
     <div class="side-panel">
 
@@ -455,7 +513,8 @@ button:active{
 
 /* ================= ELEMENTS ================= */
 
-const display = document.getElementById("display");
+const display =
+document.getElementById("display");
 
 const historyExpression =
 document.getElementById("historyExpression");
@@ -487,7 +546,7 @@ function backspace(){
     display.value.slice(0,-1);
 }
 
-/* ================= SMART FIXER ================= */
+/* ================= SMART FIX ================= */
 
 function smartFix(expression){
 
@@ -524,7 +583,10 @@ function smartFix(expression){
     expression.replace(/(\))(\d)/g,")*$2");
 
     expression =
-    expression.replace(/(\d)(sin|cos|tan|sqrt|log|ln|abs)/g,"$1*$2");
+    expression.replace(
+        /(\d)(sin|cos|tan|sqrt|log|ln|abs)/g,
+        "$1*$2"
+    );
 
     return expression;
 }
@@ -535,11 +597,13 @@ function calculate(){
 
     try{
 
-        let expression = display.value;
+        let expression =
+        display.value;
 
         if(!expression) return;
 
-        expression = smartFix(expression);
+        expression =
+        smartFix(expression);
 
         historyExpression.innerText =
         expression;
