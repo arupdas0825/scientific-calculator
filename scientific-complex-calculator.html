@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Scientific Calculator</title>
+<title>AI Scientific Calculator</title>
+
+<!-- MATH.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 
 <style>
 
@@ -15,27 +18,47 @@
 }
 
 body{
+
     min-height:100vh;
+
     display:flex;
+
     justify-content:center;
+
     align-items:center;
+
     background:
     radial-gradient(circle at top,#1e293b,#020617 70%);
+
     padding:20px;
 }
 
-/* ================= CARD ================= */
+/* ================= MAIN ================= */
+
+.wrapper{
+
+    display:flex;
+
+    gap:20px;
+
+    align-items:flex-start;
+
+    flex-wrap:wrap;
+}
+
+/* ================= CALCULATOR ================= */
 
 .calculator{
 
-    width:420px;
-    background:rgba(15,23,42,0.95);
+    width:430px;
 
-    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(15,23,42,0.95);
 
     border-radius:28px;
 
     overflow:hidden;
+
+    border:1px solid rgba(255,255,255,0.06);
 
     box-shadow:
     0 25px 70px rgba(0,0,0,0.55);
@@ -45,9 +68,7 @@ body{
 
 .top{
 
-    padding:30px 25px;
-
-    border-bottom:1px solid rgba(255,255,255,0.06);
+    padding:28px;
 }
 
 .title{
@@ -63,17 +84,15 @@ body{
     text-transform:uppercase;
 }
 
-.history{
-
-    min-height:24px;
+.history-expression{
 
     text-align:right;
 
     color:#64748b;
 
-    margin-bottom:10px;
+    min-height:22px;
 
-    font-size:15px;
+    margin-bottom:10px;
 
     overflow-x:auto;
 }
@@ -88,20 +107,20 @@ body{
 
     outline:none;
 
-    text-align:right;
-
     color:white;
+
+    text-align:right;
 
     font-size:3rem;
 
-    font-weight:600;
+    font-weight:700;
 }
 
-/* ================= BUTTON AREA ================= */
+/* ================= BUTTONS ================= */
 
 .buttons{
 
-    padding:22px;
+    padding:20px;
 
     display:grid;
 
@@ -112,7 +131,7 @@ body{
 
 button{
 
-    height:68px;
+    height:66px;
 
     border:none;
 
@@ -120,15 +139,13 @@ button{
 
     cursor:pointer;
 
+    color:white;
+
     font-size:18px;
 
     font-weight:600;
 
-    color:white;
-
     transition:0.2s;
-
-    background:#172554;
 
     box-shadow:
     inset 0 1px 1px rgba(255,255,255,0.04),
@@ -174,13 +191,95 @@ button:active{
     grid-column:span 2;
 }
 
+/* ================= HISTORY PANEL ================= */
+
+.side-panel{
+
+    width:280px;
+
+    background:rgba(15,23,42,0.95);
+
+    border-radius:24px;
+
+    padding:20px;
+
+    border:1px solid rgba(255,255,255,0.06);
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,0.45);
+}
+
+.side-title{
+
+    color:white;
+
+    margin-bottom:18px;
+
+    font-size:18px;
+
+    font-weight:600;
+}
+
+.history-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    max-height:600px;
+
+    overflow:auto;
+}
+
+.history-item{
+
+    background:#0f172a;
+
+    border-radius:16px;
+
+    padding:14px;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+    border:1px solid rgba(255,255,255,0.04);
+}
+
+.history-item:hover{
+
+    background:#172554;
+}
+
+.expression{
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+    margin-bottom:6px;
+
+    word-break:break-all;
+}
+
+.answer{
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:700;
+}
+
 /* ================= FOOTER ================= */
 
 .footer{
 
-    text-align:center;
-
     padding:14px;
+
+    text-align:center;
 
     color:#64748b;
 
@@ -191,6 +290,19 @@ button:active{
 
 /* ================= MOBILE ================= */
 
+@media(max-width:900px){
+
+    .wrapper{
+
+        justify-content:center;
+    }
+
+    .side-panel{
+
+        width:100%;
+    }
+}
+
 @media(max-width:480px){
 
     .calculator{
@@ -200,9 +312,9 @@ button:active{
 
     button{
 
-        height:60px;
+        height:58px;
 
-        font-size:16px;
+        font-size:15px;
     }
 
     .display{
@@ -216,117 +328,125 @@ button:active{
 
 <body>
 
-<div class="calculator">
+<div class="wrapper">
 
-    <!-- DISPLAY -->
+    <!-- CALCULATOR -->
 
-    <div class="top">
+    <div class="calculator">
 
-        <div class="title">
-            Scientific Calculator
+        <div class="top">
+
+            <div class="title">
+                AI Scientific Calculator
+            </div>
+
+            <div 
+                class="history-expression"
+                id="historyExpression"
+            ></div>
+
+            <input 
+                type="text"
+                id="display"
+                class="display"
+                readonly
+            />
+
         </div>
 
-        <div class="history" id="history"></div>
+        <!-- BUTTONS -->
 
-        <input 
-            type="text"
-            id="display"
-            class="display"
-            readonly
-        />
+        <div class="buttons">
 
-    </div>
+            <button class="clear" onclick="clearDisplay()">AC</button>
 
-    <!-- BUTTONS -->
+            <button class="function" onclick="backspace()">⌫</button>
 
-    <div class="buttons">
+            <button class="function" onclick="append('(')">(</button>
 
-        <!-- ROW 1 -->
+            <button class="function" onclick="append(')')">)</button>
 
-        <button class="clear" onclick="clearDisplay()">AC</button>
+            <button class="operator" onclick="append('/')">÷</button>
 
-        <button class="function" onclick="backspace()">⌫</button>
+            <button class="function" onclick="append('sin(')">sin</button>
 
-        <button class="function" onclick="append('(')">(</button>
+            <button class="function" onclick="append('cos(')">cos</button>
 
-        <button class="function" onclick="append(')')">)</button>
+            <button class="function" onclick="append('tan(')">tan</button>
 
-        <button class="operator" onclick="append('/')">÷</button>
+            <button class="function" onclick="append('log(')">log</button>
 
-        <!-- ROW 2 -->
+            <button class="operator" onclick="append('*')">×</button>
 
-        <button class="function" onclick="append('sin(')">sin</button>
+            <button class="function" onclick="append('sqrt(')">√</button>
 
-        <button class="function" onclick="append('cos(')">cos</button>
+            <button class="function" onclick="append('ln(')">ln</button>
 
-        <button class="function" onclick="append('tan(')">tan</button>
+            <button class="function" onclick="append('!')">x!</button>
 
-        <button class="function" onclick="append('log(')">log</button>
+            <button class="function" onclick="append('%')">%</button>
 
-        <button class="operator" onclick="append('*')">×</button>
+            <button class="operator" onclick="append('-')">−</button>
 
-        <!-- ROW 3 -->
+            <button class="number" onclick="append('7')">7</button>
 
-        <button class="function" onclick="append('sqrt(')">√</button>
+            <button class="number" onclick="append('8')">8</button>
 
-        <button class="function" onclick="append('ln(')">ln</button>
+            <button class="number" onclick="append('9')">9</button>
 
-        <button class="function" onclick="append('fact(')">x!</button>
+            <button class="function" onclick="append('^')">xʸ</button>
 
-        <button class="function" onclick="append('%')">%</button>
+            <button class="operator" onclick="append('+')">+</button>
 
-        <button class="operator" onclick="append('-')">−</button>
+            <button class="number" onclick="append('4')">4</button>
 
-        <!-- ROW 4 -->
+            <button class="number" onclick="append('5')">5</button>
 
-        <button class="number" onclick="append('7')">7</button>
+            <button class="number" onclick="append('6')">6</button>
 
-        <button class="number" onclick="append('8')">8</button>
+            <button class="function" onclick="append('pi')">π</button>
 
-        <button class="number" onclick="append('9')">9</button>
+            <button class="function" onclick="append('e')">e</button>
 
-        <button class="function" onclick="append('**')">xʸ</button>
+            <button class="number" onclick="append('1')">1</button>
 
-        <button class="operator" onclick="append('+')">+</button>
+            <button class="number" onclick="append('2')">2</button>
 
-        <!-- ROW 5 -->
+            <button class="number" onclick="append('3')">3</button>
 
-        <button class="number" onclick="append('4')">4</button>
+            <button class="function" onclick="append('abs(')">|x|</button>
 
-        <button class="number" onclick="append('5')">5</button>
+            <button class="function" onclick="append('ans')">Ans</button>
 
-        <button class="number" onclick="append('6')">6</button>
+            <button class="number" onclick="append('0')">0</button>
 
-        <button class="function" onclick="append('Math.PI')">π</button>
+            <button class="number" onclick="append('.')">.</button>
 
-        <button class="function" onclick="append('Math.E')">e</button>
+            <button class="function" onclick="append('sqrt(')">√x</button>
 
-        <!-- ROW 6 -->
+            <button class="equal" onclick="calculate()">=</button>
 
-        <button class="number" onclick="append('1')">1</button>
+        </div>
 
-        <button class="number" onclick="append('2')">2</button>
-
-        <button class="number" onclick="append('3')">3</button>
-
-        <button class="function" onclick="append('abs(')">|x|</button>
-
-        <button class="function" onclick="append('1/')">1/x</button>
-
-        <!-- ROW 7 -->
-
-        <button class="number" onclick="append('0')">0</button>
-
-        <button class="number" onclick="append('.')">.</button>
-
-        <button class="function" onclick="append('pow(')">pow</button>
-
-        <button class="equal" onclick="calculate()">=</button>
+        <div class="footer">
+            Smart Syntax + History System Enabled
+        </div>
 
     </div>
 
-    <div class="footer">
-        Professional Scientific Calculator UI
+    <!-- HISTORY -->
+
+    <div class="side-panel">
+
+        <div class="side-title">
+            Calculation History
+        </div>
+
+        <div 
+            class="history-list"
+            id="historyList"
+        ></div>
+
     </div>
 
 </div>
@@ -337,9 +457,17 @@ button:active{
 
 const display = document.getElementById("display");
 
-const history = document.getElementById("history");
+const historyExpression =
+document.getElementById("historyExpression");
 
-/* ================= BUTTON FUNCTIONS ================= */
+const historyList =
+document.getElementById("historyList");
+
+/* ================= MEMORY ================= */
+
+let ans = 0;
+
+/* ================= BASIC ================= */
 
 function append(value){
 
@@ -350,70 +478,55 @@ function clearDisplay(){
 
     display.value = "";
 
-    history.innerText = "";
+    historyExpression.innerText = "";
 }
 
 function backspace(){
 
-    display.value = display.value.slice(0,-1);
+    display.value =
+    display.value.slice(0,-1);
 }
 
-/* ================= MATH FUNCTIONS ================= */
+/* ================= SMART FIXER ================= */
 
-function sin(x){
+function smartFix(expression){
 
-    return Math.sin(x * Math.PI / 180);
-}
+    expression = expression
+    .replace(/÷/g,"/")
+    .replace(/×/g,"*");
 
-function cos(x){
+    /* AUTO CLOSE BRACKETS */
 
-    return Math.cos(x * Math.PI / 180);
-}
+    let open =
+    (expression.match(/\(/g)||[]).length;
 
-function tan(x){
+    let close =
+    (expression.match(/\)/g)||[]).length;
 
-    return Math.tan(x * Math.PI / 180);
-}
+    while(close < open){
 
-function log(x){
-
-    return Math.log10(x);
-}
-
-function ln(x){
-
-    return Math.log(x);
-}
-
-function sqrt(x){
-
-    return Math.sqrt(x);
-}
-
-function abs(x){
-
-    return Math.abs(x);
-}
-
-function pow(x,y){
-
-    return Math.pow(x,y);
-}
-
-function fact(n){
-
-    if(n < 0) return "Error";
-
-    if(n === 0 || n === 1) return 1;
-
-    let result = 1;
-
-    for(let i = 2; i <= n; i++){
-
-        result *= i;
+        expression += ")";
+        close++;
     }
 
-    return result;
+    /* REMOVE DOUBLE OPERATORS */
+
+    expression =
+    expression.replace(/([+\-*/]){2,}/g,
+    (match)=>match.slice(-1));
+
+    /* AUTO MULTIPLICATION */
+
+    expression =
+    expression.replace(/(\d)(\()/g,"$1*(");
+
+    expression =
+    expression.replace(/(\))(\d)/g,")*$2");
+
+    expression =
+    expression.replace(/(\d)(sin|cos|tan|sqrt|log|ln|abs)/g,"$1*$2");
+
+    return expression;
 }
 
 /* ================= CALCULATE ================= */
@@ -424,33 +537,66 @@ function calculate(){
 
         let expression = display.value;
 
-        history.innerText = expression;
+        if(!expression) return;
 
-        let result = eval(expression);
+        expression = smartFix(expression);
 
-        if(result === Infinity){
+        historyExpression.innerText =
+        expression;
 
-            display.value = "Infinity";
+        let result =
+        math.evaluate(expression,{
+            ans:ans
+        });
 
-            return;
+        if(typeof result === "number"){
+
+            result =
+            parseFloat(result.toFixed(10));
         }
 
-        if(isNaN(result)){
+        ans = result;
 
-            display.value = "Error";
+        display.value = result;
 
-            return;
-        }
+        addHistory(expression,result);
 
-        display.value = parseFloat(result.toFixed(10));
+    }catch(error){
 
-    }catch{
-
-        display.value = "Syntax Error";
+        display.value = "Invalid";
     }
 }
 
-/* ================= KEYBOARD SUPPORT ================= */
+/* ================= HISTORY ================= */
+
+function addHistory(exp,result){
+
+    const item =
+    document.createElement("div");
+
+    item.className = "history-item";
+
+    item.innerHTML = `
+
+        <div class="expression">
+            ${exp}
+        </div>
+
+        <div class="answer">
+            ${result}
+        </div>
+
+    `;
+
+    item.onclick = ()=>{
+
+        display.value = exp;
+    };
+
+    historyList.prepend(item);
+}
+
+/* ================= KEYBOARD ================= */
 
 document.addEventListener("keydown",(e)=>{
 
@@ -460,7 +606,7 @@ document.addEventListener("keydown",(e)=>{
 
         ||
 
-        "+-*/.%()".includes(e.key)
+        "+-*/.%()^".includes(e.key)
 
     ){
 
