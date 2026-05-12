@@ -1,4 +1,4 @@
-# QuantumCalc Pro
+# Scientific Calculator
 
 <div align="center">
 
