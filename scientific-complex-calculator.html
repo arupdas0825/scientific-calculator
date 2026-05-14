@@ -3,12 +3,77 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Scientific Calculator Pro</title>
+<title>AI Scientific Calculator Pro</title>
 
 <!-- MATH.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 
 <style>
+
+/* ================= ROOT THEMES ================= */
+
+:root{
+
+    --bg1:#1e293b;
+    --bg2:#020617;
+
+    --card:rgba(15,23,42,0.96);
+
+    --number:#0f172a;
+
+    --function1:#6366f1;
+    --function2:#4f46e5;
+
+    --operator1:#0ea5e9;
+    --operator2:#0284c7;
+
+    --equal1:#14b8a6;
+    --equal2:#0f766e;
+}
+
+/* AMOLED THEME */
+
+body.amoled{
+
+    --bg1:#000000;
+    --bg2:#000000;
+
+    --card:#000000;
+
+    --number:#050505;
+
+    --function1:#7c3aed;
+    --function2:#6d28d9;
+
+    --operator1:#2563eb;
+    --operator2:#1d4ed8;
+
+    --equal1:#059669;
+    --equal2:#047857;
+}
+
+/* NEON THEME */
+
+body.neon{
+
+    --bg1:#111827;
+    --bg2:#020617;
+
+    --card:#111827;
+
+    --number:#0f172a;
+
+    --function1:#ff00ff;
+    --function2:#c026d3;
+
+    --operator1:#00e5ff;
+    --operator2:#0891b2;
+
+    --equal1:#00ff99;
+    --equal2:#059669;
+}
+
+/* ================= GLOBAL ================= */
 
 *{
     margin:0;
@@ -28,9 +93,13 @@ body{
     align-items:center;
 
     background:
-    radial-gradient(circle at top,#1e293b,#020617 70%);
+    radial-gradient(circle at top,
+    var(--bg1),
+    var(--bg2) 70%);
 
     padding:20px;
+
+    transition:0.3s;
 }
 
 /* ================= WRAPPER ================= */
@@ -52,7 +121,7 @@ body{
 
     width:470px;
 
-    background:rgba(15,23,42,0.96);
+    background:var(--card);
 
     border-radius:30px;
 
@@ -62,6 +131,8 @@ body{
 
     box-shadow:
     0 30px 80px rgba(0,0,0,0.55);
+
+    transition:0.3s;
 }
 
 /* ================= DISPLAY ================= */
@@ -84,6 +155,45 @@ body{
     margin-bottom:18px;
 
     text-transform:uppercase;
+}
+
+/* ================= TOOLBAR ================= */
+
+.toolbar{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+
+    margin-bottom:20px;
+}
+
+.theme-btn{
+
+    border:none;
+
+    padding:10px 14px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    background:#1e293b;
+
+    color:white;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    transition:0.2s;
+}
+
+.theme-btn:hover{
+
+    opacity:0.8;
 }
 
 .history-expression{
@@ -133,7 +243,7 @@ body{
     gap:18px;
 }
 
-/* ================= SCIENTIFIC ROW ================= */
+/* ================= SCIENTIFIC GRID ================= */
 
 .scientific-grid{
 
@@ -190,23 +300,27 @@ button:active{
     transform:scale(0.96);
 }
 
-/* ================= TYPES ================= */
+/* ================= BUTTON TYPES ================= */
 
 .number{
 
-    background:#0f172a;
+    background:var(--number);
 }
 
 .operator{
 
     background:
-    linear-gradient(135deg,#0ea5e9,#0284c7);
+    linear-gradient(135deg,
+    var(--operator1),
+    var(--operator2));
 }
 
 .function{
 
     background:
-    linear-gradient(135deg,#6366f1,#4f46e5);
+    linear-gradient(135deg,
+    var(--function1),
+    var(--function2));
 }
 
 .clear{
@@ -218,7 +332,9 @@ button:active{
 .equal{
 
     background:
-    linear-gradient(135deg,#14b8a6,#0f766e);
+    linear-gradient(135deg,
+    var(--equal1),
+    var(--equal2));
 
     height:150px;
 
@@ -236,7 +352,7 @@ button:active{
 
     width:290px;
 
-    background:rgba(15,23,42,0.96);
+    background:var(--card);
 
     border-radius:26px;
 
@@ -246,6 +362,8 @@ button:active{
 
     box-shadow:
     0 20px 50px rgba(0,0,0,0.45);
+
+    transition:0.3s;
 }
 
 .side-title{
@@ -378,12 +496,37 @@ button:active{
 
     <div class="calculator">
 
-        <!-- DISPLAY -->
-
         <div class="top">
 
             <div class="title">
                 AI Scientific Calculator Pro
+            </div>
+
+            <!-- TOOLBAR -->
+
+            <div class="toolbar">
+
+                <button 
+                    class="theme-btn"
+                    onclick="setTheme('default')"
+                >
+                    Default
+                </button>
+
+                <button 
+                    class="theme-btn"
+                    onclick="setTheme('amoled')"
+                >
+                    AMOLED
+                </button>
+
+                <button 
+                    class="theme-btn"
+                    onclick="setTheme('neon')"
+                >
+                    Neon
+                </button>
+
             </div>
 
             <div 
@@ -400,11 +543,11 @@ button:active{
 
         </div>
 
-        <!-- KEYPAD -->
+        <!-- ================= KEYPAD ================= -->
 
         <div class="keypad">
 
-            <!-- SCIENTIFIC FUNCTIONS -->
+            <!-- SCIENTIFIC -->
 
             <div class="scientific-grid">
 
@@ -430,11 +573,9 @@ button:active{
 
             </div>
 
-            <!-- MAIN CALCULATOR -->
+            <!-- MAIN GRID -->
 
             <div class="main-grid">
-
-                <!-- ROW 1 -->
 
                 <button class="clear" onclick="clearDisplay()">AC</button>
 
@@ -444,8 +585,6 @@ button:active{
 
                 <button class="operator" onclick="append('/')">÷</button>
 
-                <!-- ROW 2 -->
-
                 <button class="number" onclick="append('7')">7</button>
 
                 <button class="number" onclick="append('8')">8</button>
@@ -453,8 +592,6 @@ button:active{
                 <button class="number" onclick="append('9')">9</button>
 
                 <button class="operator" onclick="append('*')">×</button>
-
-                <!-- ROW 3 -->
 
                 <button class="number" onclick="append('4')">4</button>
 
@@ -464,8 +601,6 @@ button:active{
 
                 <button class="operator" onclick="append('-')">−</button>
 
-                <!-- ROW 4 -->
-
                 <button class="number" onclick="append('1')">1</button>
 
                 <button class="number" onclick="append('2')">2</button>
@@ -473,8 +608,6 @@ button:active{
                 <button class="number" onclick="append('3')">3</button>
 
                 <button class="operator" onclick="append('+')">+</button>
-
-                <!-- ROW 5 -->
 
                 <button class="number zero" onclick="append('0')">0</button>
 
@@ -487,7 +620,7 @@ button:active{
         </div>
 
         <div class="footer">
-            Better Button Layout + Smart History System
+            Theme System + Persistent History Upgrade
         </div>
 
     </div>
@@ -554,8 +687,6 @@ function smartFix(expression){
     .replace(/÷/g,"/")
     .replace(/×/g,"*");
 
-    /* AUTO CLOSE BRACKETS */
-
     let open =
     (expression.match(/\(/g)||[]).length;
 
@@ -568,13 +699,9 @@ function smartFix(expression){
         close++;
     }
 
-    /* REMOVE DOUBLE OPERATORS */
-
     expression =
     expression.replace(/([+\-*/]){2,}/g,
     (match)=>match.slice(-1));
-
-    /* AUTO MULTIPLICATION */
 
     expression =
     expression.replace(/(\d)(\()/g,"$1*(");
@@ -658,6 +785,103 @@ function addHistory(exp,result){
     };
 
     historyList.prepend(item);
+
+    saveHistory();
+}
+
+/* ================= SAVE HISTORY ================= */
+
+function saveHistory(){
+
+    localStorage.setItem(
+        "calculator-history",
+        historyList.innerHTML
+    );
+}
+
+/* LOAD HISTORY */
+
+const savedHistory =
+localStorage.getItem(
+    "calculator-history"
+);
+
+if(savedHistory){
+
+    historyList.innerHTML =
+    savedHistory;
+
+    document
+    .querySelectorAll(".history-item")
+    .forEach(item=>{
+
+        item.onclick = ()=>{
+
+            const exp =
+            item.querySelector(
+                ".expression"
+            ).innerText;
+
+            display.value = exp;
+        };
+    });
+}
+
+/* ================= THEME ================= */
+
+function setTheme(theme){
+
+    document.body.classList.remove(
+        "amoled",
+        "neon"
+    );
+
+    if(theme !== "default"){
+
+        document.body.classList.add(theme);
+    }
+
+    localStorage.setItem(
+        "calculator-theme",
+        theme
+    );
+}
+
+/* LOAD SAVED THEME */
+
+const savedTheme =
+localStorage.getItem(
+    "calculator-theme"
+);
+
+if(savedTheme){
+
+    setTheme(savedTheme);
+}
+
+/* ================= SAVE MEMORY ================= */
+
+window.addEventListener(
+    "beforeunload",
+    ()=>{
+
+        localStorage.setItem(
+            "calculator-ans",
+            ans
+        );
+    }
+);
+
+/* LOAD MEMORY */
+
+const savedAns =
+localStorage.getItem(
+    "calculator-ans"
+);
+
+if(savedAns){
+
+    ans = savedAns;
 }
 
 /* ================= KEYBOARD ================= */
