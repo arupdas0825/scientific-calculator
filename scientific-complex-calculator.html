@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Scientific Calculator Pro</title>
+<title>Scientific Calculator Pro</title>
 
 <!-- MATH.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
@@ -31,14 +31,14 @@
     --equal2:#0f766e;
 }
 
-/* AMOLED THEME */
+/* AMOLED */
 
 body.amoled{
 
-    --bg1:#000000;
-    --bg2:#000000;
+    --bg1:#000;
+    --bg2:#000;
 
-    --card:#000000;
+    --card:#000;
 
     --number:#050505;
 
@@ -52,7 +52,7 @@ body.amoled{
     --equal2:#047857;
 }
 
-/* NEON THEME */
+/* NEON */
 
 body.neon{
 
@@ -131,8 +131,6 @@ body{
 
     box-shadow:
     0 30px 80px rgba(0,0,0,0.55);
-
-    transition:0.3s;
 }
 
 /* ================= DISPLAY ================= */
@@ -163,11 +161,21 @@ body{
 
     display:flex;
 
-    justify-content:flex-end;
+    justify-content:space-between;
 
     gap:10px;
 
     margin-bottom:20px;
+
+    flex-wrap:wrap;
+}
+
+.toolbar-left,
+.toolbar-right{
+
+    display:flex;
+
+    gap:10px;
 }
 
 .theme-btn{
@@ -189,11 +197,19 @@ body{
     font-weight:600;
 
     transition:0.2s;
+
+    height:auto;
 }
 
 .theme-btn:hover{
 
     opacity:0.8;
+}
+
+.solve-btn{
+
+    background:
+    linear-gradient(135deg,#f59e0b,#d97706);
 }
 
 .history-expression{
@@ -243,8 +259,6 @@ body{
     gap:18px;
 }
 
-/* ================= SCIENTIFIC GRID ================= */
-
 .scientific-grid{
 
     display:grid;
@@ -253,8 +267,6 @@ body{
 
     gap:12px;
 }
-
-/* ================= MAIN GRID ================= */
 
 .main-grid{
 
@@ -300,7 +312,7 @@ button:active{
     transform:scale(0.96);
 }
 
-/* ================= BUTTON TYPES ================= */
+/* ================= TYPES ================= */
 
 .number{
 
@@ -350,7 +362,7 @@ button:active{
 
 .side-panel{
 
-    width:290px;
+    width:320px;
 
     background:var(--card);
 
@@ -362,8 +374,6 @@ button:active{
 
     box-shadow:
     0 20px 50px rgba(0,0,0,0.45);
-
-    transition:0.3s;
 }
 
 .side-title{
@@ -430,6 +440,41 @@ button:active{
     font-weight:700;
 }
 
+/* ================= SOLVER BOX ================= */
+
+.solver-box{
+
+    margin-top:20px;
+
+    background:#0f172a;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.solver-title{
+
+    color:#f59e0b;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+}
+
+.solver-result{
+
+    color:white;
+
+    font-size:16px;
+
+    line-height:1.7;
+}
+
 /* ================= FOOTER ================= */
 
 .footer{
@@ -483,6 +528,11 @@ button:active{
 
         font-size:2.3rem;
     }
+
+    .toolbar{
+
+        flex-direction:column;
+    }
 }
 
 </style>
@@ -506,26 +556,41 @@ button:active{
 
             <div class="toolbar">
 
-                <button 
-                    class="theme-btn"
-                    onclick="setTheme('default')"
-                >
-                    Default
-                </button>
+                <div class="toolbar-left">
 
-                <button 
-                    class="theme-btn"
-                    onclick="setTheme('amoled')"
-                >
-                    AMOLED
-                </button>
+                    <button 
+                        class="theme-btn"
+                        onclick="setTheme('default')"
+                    >
+                        Default
+                    </button>
 
-                <button 
-                    class="theme-btn"
-                    onclick="setTheme('neon')"
-                >
-                    Neon
-                </button>
+                    <button 
+                        class="theme-btn"
+                        onclick="setTheme('amoled')"
+                    >
+                        AMOLED
+                    </button>
+
+                    <button 
+                        class="theme-btn"
+                        onclick="setTheme('neon')"
+                    >
+                        Neon
+                    </button>
+
+                </div>
+
+                <div class="toolbar-right">
+
+                    <button 
+                        class="theme-btn solve-btn"
+                        onclick="solveEquation()"
+                    >
+                        Solve x
+                    </button>
+
+                </div>
 
             </div>
 
@@ -620,12 +685,12 @@ button:active{
         </div>
 
         <div class="footer">
-            Theme System + Persistent History Upgrade
+            Equation Solver System + Persistent Theme & History
         </div>
 
     </div>
 
-    <!-- ================= HISTORY PANEL ================= -->
+    <!-- ================= SIDE PANEL ================= -->
 
     <div class="side-panel">
 
@@ -637,6 +702,25 @@ button:active{
             class="history-list"
             id="historyList"
         ></div>
+
+        <!-- EQUATION SOLVER -->
+
+        <div class="solver-box">
+
+            <div class="solver-title">
+                Equation Solver
+            </div>
+
+            <div 
+                class="solver-result"
+                id="solverResult"
+            >
+                Enter equation like:
+                <br>
+                2x+5=15
+            </div>
+
+        </div>
 
     </div>
 
@@ -654,6 +738,9 @@ document.getElementById("historyExpression");
 
 const historyList =
 document.getElementById("historyList");
+
+const solverResult =
+document.getElementById("solverResult");
 
 /* ================= MEMORY ================= */
 
@@ -710,10 +797,7 @@ function smartFix(expression){
     expression.replace(/(\))(\d)/g,")*$2");
 
     expression =
-    expression.replace(
-        /(\d)(sin|cos|tan|sqrt|log|ln|abs)/g,
-        "$1*$2"
-    );
+    expression.replace(/(\d)x/g,"$1*x");
 
     return expression;
 }
@@ -755,6 +839,98 @@ function calculate(){
     }catch(error){
 
         display.value = "Invalid";
+    }
+}
+
+/* ================= EQUATION SOLVER ================= */
+
+function solveEquation(){
+
+    try{
+
+        let equation =
+        display.value;
+
+        if(!equation.includes("=")){
+
+            solverResult.innerHTML =
+            "Please enter equation with = sign";
+
+            return;
+        }
+
+        equation =
+        equation.replace(/\s/g,'');
+
+        const parts =
+        equation.split("=");
+
+        let left = parts[0];
+        let right = parts[1];
+
+        left =
+        left.replace(/(\d)x/g,"$1*x");
+
+        right =
+        right.replace(/(\d)x/g,"$1*x");
+
+        const expr =
+        math.simplify(
+            `(${left}) - (${right})`
+        );
+
+        const compiled =
+        expr.toString();
+
+        let solutions = [];
+
+        for(let x = -1000; x <= 1000; x += 0.01){
+
+            let value =
+            math.evaluate(compiled,{x});
+
+            if(Math.abs(value) < 0.01){
+
+                solutions.push(
+                    Number(x.toFixed(2))
+                );
+
+                if(solutions.length > 5){
+                    break;
+                }
+            }
+        }
+
+        solutions =
+        [...new Set(solutions)];
+
+        if(solutions.length === 0){
+
+            solverResult.innerHTML =
+            "No solution found";
+
+            return;
+        }
+
+        solverResult.innerHTML =
+        `
+        Equation:
+        <br><br>
+
+        ${equation}
+
+        <br><br>
+
+        Solution:
+        <br><br>
+
+        x = ${solutions.join(", ")}
+        `;
+
+    }catch(error){
+
+        solverResult.innerHTML =
+        "Invalid Equation";
     }
 }
 
@@ -847,7 +1023,7 @@ function setTheme(theme){
     );
 }
 
-/* LOAD SAVED THEME */
+/* LOAD THEME */
 
 const savedTheme =
 localStorage.getItem(
@@ -894,7 +1070,7 @@ document.addEventListener("keydown",(e)=>{
 
         ||
 
-        "+-*/.%()^".includes(e.key)
+        "+-*/.%()^=x".includes(e.key)
 
     ){
 
