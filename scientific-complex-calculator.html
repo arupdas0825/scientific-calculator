@@ -1,579 +1,1055 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Scientific Calculator Pro</title>
+<title>Scientific Calculator Pro Max</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+
 <style>
+
 :root{
-  --bg1:#1e293b;--bg2:#020617;--card:rgba(15,23,42,0.96);
-  --number:#0f172a;--function1:#6366f1;--function2:#4f46e5;
-  --operator1:#0ea5e9;--operator2:#0284c7;--equal1:#14b8a6;--equal2:#0f766e;
+  --bg1:#1e293b;
+  --bg2:#020617;
+  --card:#0f172a;
+  --text:#ffffff;
+  --muted:#94a3b8;
+
+  --number:#111827;
+
+  --function1:#7c3aed;
+  --function2:#6d28d9;
+
+  --operator1:#0ea5e9;
+  --operator2:#0284c7;
+
+  --equal1:#14b8a6;
+  --equal2:#0f766e;
 }
-body.amoled{--bg1:#000;--bg2:#000;--card:#000;--number:#050505;--function1:#7c3aed;--function2:#6d28d9;--operator1:#2563eb;--operator2:#1d4ed8;--equal1:#059669;--equal2:#047857;}
-body.neon{--bg1:#111827;--bg2:#020617;--card:#111827;--number:#0f172a;--function1:#a855f7;--function2:#9333ea;--operator1:#06b6d4;--operator2:#0891b2;--equal1:#10b981;--equal2:#059669;}
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
-body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(circle at top,var(--bg1),var(--bg2) 70%);padding:20px;transition:0.3s;gap:0;}
-.wrapper{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;width:100%;max-width:1200px;justify-content:center;}
-.calculator{width:460px;background:var(--card);border-radius:30px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);box-shadow:0 30px 80px rgba(0,0,0,0.55);flex-shrink:0;}
-.top{padding:24px 22px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.title{color:#94a3b8;font-size:12px;letter-spacing:3px;margin-bottom:14px;text-transform:uppercase;}
-.toolbar{display:flex;justify-content:space-between;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.toolbar-left,.toolbar-right{display:flex;gap:8px;flex-wrap:wrap;}
-.theme-btn{border:none;padding:8px 12px;border-radius:10px;cursor:pointer;background:#1e293b;color:white;font-size:11px;font-weight:600;transition:0.2s;height:auto;}
-.theme-btn:hover{opacity:0.8;}
-.solve-btn{background:linear-gradient(135deg,#f59e0b,#d97706);}
-.graph-btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);}
-.history-expression{text-align:right;color:#64748b;min-height:20px;margin-bottom:10px;overflow-x:auto;font-size:14px;}
-.display{width:100%;background:transparent;border:none;outline:none;color:white;text-align:right;font-size:2.8rem;font-weight:700;}
-.keypad{padding:18px;display:flex;flex-direction:column;gap:14px;}
-.scientific-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
-.main-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-button{border:none;height:64px;border-radius:18px;cursor:pointer;color:white;font-size:17px;font-weight:600;transition:0.2s;box-shadow:inset 0 1px 1px rgba(255,255,255,0.04),0 6px 14px rgba(0,0,0,0.3);}
-button:hover{transform:translateY(-2px);}
-button:active{transform:scale(0.96);}
-.number{background:var(--number);}
-.operator{background:linear-gradient(135deg,var(--operator1),var(--operator2));}
-.function{background:linear-gradient(135deg,var(--function1),var(--function2));}
-.clear{background:linear-gradient(135deg,#ef4444,#dc2626);}
-.equal{background:linear-gradient(135deg,var(--equal1),var(--equal2));height:140px;grid-row:span 2;}
-.zero{grid-column:span 2;}
-.footer{padding:12px;text-align:center;color:#64748b;font-size:11px;border-top:1px solid rgba(255,255,255,0.05);}
 
-/* SIDE PANEL */
-.side-panel{width:310px;display:flex;flex-direction:column;gap:16px;flex-shrink:0;}
-.panel-box{background:var(--card);border-radius:24px;padding:20px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 20px 50px rgba(0,0,0,0.45);}
-.panel-title{color:white;margin-bottom:16px;font-size:16px;font-weight:700;}
-.history-list{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow:auto;}
-.history-item{background:#0f172a;border-radius:16px;padding:13px;cursor:pointer;transition:0.2s;border:1px solid rgba(255,255,255,0.04);}
-.history-item:hover{background:#172554;}
-.expression{color:#94a3b8;font-size:13px;margin-bottom:4px;word-break:break-all;}
-.answer{color:white;font-size:16px;font-weight:700;}
-.solver-box{background:#0f172a;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05);}
-.solver-title{color:#f59e0b;font-size:14px;font-weight:700;margin-bottom:10px;}
-.solver-result{color:white;font-size:14px;line-height:1.7;}
+body.amoled{
+  --bg1:#000;
+  --bg2:#000;
+  --card:#000;
+}
 
-/* GRAPH PANEL */
-.graph-panel{background:var(--card);border-radius:24px;padding:20px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 20px 50px rgba(0,0,0,0.45);width:100%;display:none;}
-.graph-panel.open{display:block;}
-.graph-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.graph-title{color:white;font-size:16px;font-weight:700;}
-.graph-close{background:#1e293b;border:none;color:#94a3b8;font-size:18px;width:32px;height:32px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s;}
-.graph-close:hover{background:#334155;color:white;transform:none;}
-.graph-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.fn-input-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.fn-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-.fn-input{flex:1;background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;padding:8px 12px;font-size:14px;outline:none;}
-.fn-input:focus{border-color:rgba(139,92,246,0.5);}
-.fn-input::placeholder{color:#475569;}
-.add-fn-btn{background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;color:white;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;height:auto;transition:0.2s;}
-.add-fn-btn:hover{opacity:0.85;transform:none;}
-.plot-btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:none;color:white;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;height:auto;transition:0.2s;}
-.plot-btn:hover{opacity:0.85;transform:none;}
-.zoom-controls{display:flex;gap:6px;align-items:center;}
-.zoom-btn{background:#1e293b;border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;transition:0.2s;display:flex;align-items:center;justify-content:center;}
-.zoom-btn:hover{background:#334155;transform:none;}
-.zoom-label{color:#64748b;font-size:12px;min-width:70px;text-align:center;}
-canvas#graphCanvas{width:100%;border-radius:16px;background:#070e1a;display:block;cursor:crosshair;}
-.graph-info{margin-top:8px;color:#475569;font-size:12px;text-align:center;}
-.range-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
-.range-label{color:#64748b;font-size:12px;}
-.range-input{background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;padding:5px 8px;font-size:13px;width:70px;outline:none;}
-.fn-remove{background:none;border:none;color:#64748b;cursor:pointer;font-size:16px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:0.2s;flex-shrink:0;}
-.fn-remove:hover{color:#ef4444;background:rgba(239,68,68,0.1);transform:none;}
+body.neon{
+  --bg1:#111827;
+  --bg2:#020617;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background:
+  radial-gradient(circle at top,
+  var(--bg1),
+  var(--bg2) 70%);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:20px;
+  color:var(--text);
+}
+
+.wrapper{
+  width:100%;
+  max-width:1300px;
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+/* ================= CALCULATOR ================= */
+
+.calculator{
+  width:470px;
+  background:var(--card);
+  border-radius:28px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);
+  box-shadow:
+  0 30px 70px rgba(0,0,0,0.5);
+}
+
+.top{
+  padding:24px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+.title{
+  font-size:12px;
+  letter-spacing:3px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.toolbar-group{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.small-btn{
+  border:none;
+  background:#1e293b;
+  color:white;
+  padding:9px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:700;
+}
+
+.graph-btn{
+  background:linear-gradient(135deg,#8b5cf6,#7c3aed);
+}
+
+.solve-btn{
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+}
+
+.history-expression{
+  text-align:right;
+  color:#64748b;
+  min-height:20px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+.display{
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  color:white;
+  text-align:right;
+  font-size:2.8rem;
+  font-weight:700;
+}
+
+/* ================= KEYPAD ================= */
+
+.keypad{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.scientific-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+
+.main-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.variable-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+
+button{
+  border:none;
+  height:62px;
+  border-radius:18px;
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:700;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+.number{
+  background:var(--number);
+}
+
+.function{
+  background:
+  linear-gradient(135deg,
+  var(--function1),
+  var(--function2));
+}
+
+.operator{
+  background:
+  linear-gradient(135deg,
+  var(--operator1),
+  var(--operator2));
+}
+
+.equal{
+  background:
+  linear-gradient(135deg,
+  var(--equal1),
+  var(--equal2));
+  height:136px;
+  grid-row:span 2;
+}
+
+.clear{
+  background:
+  linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+.zero{
+  grid-column:span 2;
+}
+
+/* ================= SIDE PANEL ================= */
+
+.side-panel{
+  width:320px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.panel{
+  background:var(--card);
+  border-radius:24px;
+  padding:18px;
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+.panel-title{
+  font-size:16px;
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+.history-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height:300px;
+  overflow:auto;
+}
+
+.history-item{
+  background:#111827;
+  border-radius:14px;
+  padding:12px;
+  cursor:pointer;
+}
+
+.expression{
+  color:#94a3b8;
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.answer{
+  font-size:16px;
+  font-weight:700;
+}
+
+.solver-result{
+  line-height:1.7;
+  color:#e2e8f0;
+}
+
+/* ================= GRAPH ================= */
+
+.graph-panel{
+  width:100%;
+  background:var(--card);
+  border-radius:28px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.06);
+  display:none;
+}
+
+.graph-panel.open{
+  display:block;
+}
+
+.graph-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.graph-title{
+  font-size:18px;
+  font-weight:700;
+}
+
+.graph-controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.graph-input{
+  flex:1;
+  min-width:220px;
+  background:#111827;
+  border:none;
+  outline:none;
+  color:white;
+  padding:12px;
+  border-radius:12px;
+}
+
+.plot-btn{
+  background:
+  linear-gradient(135deg,#8b5cf6,#7c3aed);
+  padding:0 18px;
+}
+
+canvas{
+  width:100%;
+  height:420px;
+  background:#020617;
+  border-radius:18px;
+}
+
+.graph-note{
+  margin-top:10px;
+  color:#64748b;
+  font-size:13px;
+  text-align:center;
+}
+
+.footer{
+  padding:12px;
+  text-align:center;
+  color:#64748b;
+  font-size:11px;
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+
+/* ================= MOBILE ================= */
 
 @media(max-width:1100px){
-  .wrapper{flex-direction:column;align-items:center;}
-  .side-panel{width:460px;}
-  .graph-panel{max-width:460px;}
+
+  .wrapper{
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .side-panel{
+    width:470px;
+  }
 }
+
 @media(max-width:520px){
-  .calculator,.side-panel,.graph-panel{width:100%;max-width:100%;}
-  button{height:56px;font-size:14px;}
-  .equal{height:124px;}
-  .display{font-size:2.2rem;}
-  canvas#graphCanvas{height:260px !important;}
+
+  .calculator,
+  .side-panel{
+    width:100%;
+  }
+
+  button{
+    height:56px;
+    font-size:14px;
+  }
+
+  .equal{
+    height:122px;
+  }
+
+  .display{
+    font-size:2.2rem;
+  }
+
+  canvas{
+    height:280px;
+  }
 }
+
 </style>
 </head>
+
 <body>
+
 <div class="wrapper">
 
   <!-- CALCULATOR -->
+
   <div class="calculator">
+
     <div class="top">
-      <div class="title">Scientific Calculator Pro</div>
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <button class="theme-btn" onclick="setTheme('default')">Default</button>
-          <button class="theme-btn" onclick="setTheme('amoled')">AMOLED</button>
-          <button class="theme-btn" onclick="setTheme('neon')">Neon</button>
-        </div>
-        <div class="toolbar-right">
-          <button class="theme-btn graph-btn" onclick="openGraph()">📈 Graph</button>
-          <button class="theme-btn solve-btn" onclick="solveEquation()">Solve x</button>
-        </div>
+
+      <div class="title">
+        Scientific Calculator Pro Max
       </div>
-      <div class="history-expression" id="historyExpression"></div>
-      <input type="text" id="display" class="display" readonly/>
+
+      <div class="toolbar">
+
+        <div class="toolbar-group">
+
+          <button class="small-btn"
+          onclick="setTheme('default')">
+          Default
+          </button>
+
+          <button class="small-btn"
+          onclick="setTheme('amoled')">
+          AMOLED
+          </button>
+
+          <button class="small-btn"
+          onclick="setTheme('neon')">
+          Neon
+          </button>
+
+        </div>
+
+        <div class="toolbar-group">
+
+          <button class="small-btn graph-btn"
+          onclick="openGraph()">
+          📈 Graph
+          </button>
+
+          <button class="small-btn solve-btn"
+          onclick="solveEquation()">
+          Solve
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="history-expression"
+      id="historyExpression"></div>
+
+      <input type="text"
+      id="display"
+      class="display"
+      readonly>
+
     </div>
 
     <div class="keypad">
+
+      <!-- SCIENTIFIC -->
+
       <div class="scientific-grid">
-        <button class="function" onclick="append('sin(')">sin</button>
-        <button class="function" onclick="append('cos(')">cos</button>
-        <button class="function" onclick="append('tan(')">tan</button>
-        <button class="function" onclick="append('log(')">log</button>
-        <button class="function" onclick="append('ln(')">ln</button>
-        <button class="function" onclick="append('sqrt(')">√</button>
-        <button class="function" onclick="append('^')">xʸ</button>
-        <button class="function" onclick="append('!')">x!</button>
-        <button class="function" onclick="append('pi')">π</button>
-        <button class="function" onclick="append('e')">e</button>
+
+        <button class="function"
+        onclick="append('sin(')">sin</button>
+
+        <button class="function"
+        onclick="append('cos(')">cos</button>
+
+        <button class="function"
+        onclick="append('tan(')">tan</button>
+
+        <button class="function"
+        onclick="append('log(')">log</button>
+
+        <button class="function"
+        onclick="append('ln(')">ln</button>
+
+        <button class="function"
+        onclick="append('sqrt(')">√</button>
+
+        <button class="function"
+        onclick="append('^')">xʸ</button>
+
+        <button class="function"
+        onclick="append('!')">x!</button>
+
+        <button class="function"
+        onclick="append('pi')">π</button>
+
+        <button class="function"
+        onclick="append('e')">e</button>
+
       </div>
+
+      <!-- VARIABLES -->
+
+      <div class="variable-grid">
+
+        <button class="function"
+        onclick="append('x')">X</button>
+
+        <button class="function"
+        onclick="append('y')">Y</button>
+
+        <button class="function"
+        onclick="append('a')">A</button>
+
+        <button class="function"
+        onclick="append('b')">B</button>
+
+        <button class="function"
+        onclick="append('c')">C</button>
+
+        <button class="function"
+        onclick="append('d')">D</button>
+
+      </div>
+
+      <!-- MAIN -->
+
       <div class="main-grid">
-        <button class="clear" onclick="clearDisplay()">AC</button>
-        <button class="function" onclick="backspace()">⌫</button>
-        <button class="function" onclick="append('(')">(</button>
-        <button class="operator" onclick="append('/')">÷</button>
-        <button class="number" onclick="append('7')">7</button>
-        <button class="number" onclick="append('8')">8</button>
-        <button class="number" onclick="append('9')">9</button>
-        <button class="operator" onclick="append('*')">×</button>
-        <button class="number" onclick="append('4')">4</button>
-        <button class="number" onclick="append('5')">5</button>
-        <button class="number" onclick="append('6')">6</button>
-        <button class="operator" onclick="append('-')">−</button>
-        <button class="number" onclick="append('1')">1</button>
-        <button class="number" onclick="append('2')">2</button>
-        <button class="number" onclick="append('3')">3</button>
-        <button class="operator" onclick="append('+')">+</button>
-        <button class="number zero" onclick="append('0')">0</button>
-        <button class="number" onclick="append('.')">.</button>
-        <button class="equal" onclick="calculate()">=</button>
+
+        <button class="clear"
+        onclick="clearDisplay()">AC</button>
+
+        <button class="function"
+        onclick="backspace()">⌫</button>
+
+        <button class="function"
+        onclick="append('(')">(</button>
+
+        <button class="function"
+        onclick="append(')')">)</button>
+
+        <button class="number"
+        onclick="append('7')">7</button>
+
+        <button class="number"
+        onclick="append('8')">8</button>
+
+        <button class="number"
+        onclick="append('9')">9</button>
+
+        <button class="operator"
+        onclick="append('/')">÷</button>
+
+        <button class="number"
+        onclick="append('4')">4</button>
+
+        <button class="number"
+        onclick="append('5')">5</button>
+
+        <button class="number"
+        onclick="append('6')">6</button>
+
+        <button class="operator"
+        onclick="append('*')">×</button>
+
+        <button class="number"
+        onclick="append('1')">1</button>
+
+        <button class="number"
+        onclick="append('2')">2</button>
+
+        <button class="number"
+        onclick="append('3')">3</button>
+
+        <button class="operator"
+        onclick="append('-')">−</button>
+
+        <button class="number zero"
+        onclick="append('0')">0</button>
+
+        <button class="number"
+        onclick="append('.')">.</button>
+
+        <button class="operator"
+        onclick="append('+')">+</button>
+
+        <button class="equal"
+        onclick="calculate()">=</button>
+
       </div>
+
     </div>
-    <div class="footer">Graph • Equation Solver • History</div>
+
+    <div class="footer">
+      Fixed Calculator + Advanced Graphing + Equation Solver
+    </div>
+
   </div>
 
   <!-- SIDE PANEL -->
+
   <div class="side-panel">
-    <div class="panel-box">
-      <div class="panel-title">Calculation History</div>
-      <div class="history-list" id="historyList"></div>
-    </div>
-    <div class="panel-box">
-      <div class="solver-box" style="background:transparent;padding:0;border:none;">
-        <div class="solver-title">Equation Solver</div>
-        <div class="solver-result" id="solverResult">Enter equation like:<br>2x+5=15</div>
+
+    <div class="panel">
+
+      <div class="panel-title">
+        History
       </div>
+
+      <div class="history-list"
+      id="historyList"></div>
+
     </div>
+
+    <div class="panel">
+
+      <div class="panel-title">
+        Equation Solver
+      </div>
+
+      <div class="solver-result"
+      id="solverResult">
+
+      Enter:
+      <br><br>
+
+      2x+5=15
+
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- GRAPH PANEL — full width row -->
-  <div class="graph-panel" id="graphPanel">
-    <div class="graph-header">
-      <div class="graph-title">📈 Function Grapher</div>
-      <button class="graph-close" onclick="closeGraph()">✕</button>
-    </div>
+  <!-- GRAPH -->
 
-    <div id="fnList"></div>
+  <div class="graph-panel"
+  id="graphPanel">
+
+    <div class="graph-top">
+
+      <div class="graph-title">
+        Interactive Graph
+      </div>
+
+      <button class="small-btn"
+      onclick="closeGraph()">
+      Close
+      </button>
+
+    </div>
 
     <div class="graph-controls">
-      <button class="add-fn-btn" onclick="addFnRow()">+ Add Function</button>
-      <button class="plot-btn" onclick="drawGraph()">Plot</button>
-      <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomIn()">+</button>
-        <span class="zoom-label" id="zoomLabel">x: −10 to 10</span>
-        <button class="zoom-btn" onclick="zoomOut()">−</button>
-        <button class="zoom-btn" onclick="resetView()" title="Reset">⟳</button>
-      </div>
+
+      <input type="text"
+      id="graphInput"
+      class="graph-input"
+      placeholder="Example: x^2 + 5*x + 2">
+
+      <button class="small-btn plot-btn"
+      onclick="drawGraph()">
+      Plot
+      </button>
+
     </div>
 
-    <div class="range-row">
-      <span class="range-label">x from</span>
-      <input class="range-input" id="xMin" type="number" value="-10"/>
-      <span class="range-label">to</span>
-      <input class="range-input" id="xMax" type="number" value="10"/>
-      <span class="range-label">y from</span>
-      <input class="range-input" id="yMin" type="number" value="-10"/>
-      <span class="range-label">to</span>
-      <input class="range-input" id="yMax" type="number" value="10"/>
+    <canvas id="graphCanvas"></canvas>
+
+    <div class="graph-note">
+      Supports functions like:
+      sin(x), x^2, log(x), sqrt(x)
     </div>
 
-    <canvas id="graphCanvas" height="380"></canvas>
-    <div class="graph-info" id="graphInfo">Click Plot to draw functions</div>
   </div>
 
 </div>
 
 <script>
-const display = document.getElementById("display");
-const historyExpression = document.getElementById("historyExpression");
-const historyList = document.getElementById("historyList");
-const solverResult = document.getElementById("solverResult");
+
+const display =
+document.getElementById("display");
+
+const historyExpression =
+document.getElementById("historyExpression");
+
+const historyList =
+document.getElementById("historyList");
+
+const solverResult =
+document.getElementById("solverResult");
 
 let ans = 0;
 
-function append(v){ display.value += v; }
-function clearDisplay(){ display.value=""; historyExpression.innerText=""; }
-function backspace(){ display.value = display.value.slice(0,-1); }
+/* ================= BASIC ================= */
 
-function smartFix(e){
-  e = e.replace(/÷/g,"/").replace(/×/g,"*");
-  let o=(e.match(/\(/g)||[]).length, c=(e.match(/\)/g)||[]).length;
-  while(c<o){e+=")";c++;}
-  e = e.replace(/([+\-*/]){2,}/g,m=>m.slice(-1));
-  e = e.replace(/(\d)(\()/g,"$1*(").replace(/(\))(\d)/g,")*$2").replace(/(\d)x/g,"$1*x");
-  return e;
+function append(v){
+
+  display.value += v;
 }
+
+function clearDisplay(){
+
+  display.value = "";
+  historyExpression.innerText = "";
+}
+
+function backspace(){
+
+  display.value =
+  display.value.slice(0,-1);
+}
+
+/* ================= SMART FIX ================= */
+
+function smartFix(exp){
+
+  exp = exp
+  .replace(/÷/g,"/")
+  .replace(/×/g,"*");
+
+  exp = exp
+  .replace(/(\d)([a-zA-Z])/g,"$1*$2");
+
+  exp = exp
+  .replace(/([a-zA-Z])(\d)/g,"$1*$2");
+
+  exp = exp
+  .replace(/(\))(\d)/g,")*$2");
+
+  exp = exp
+  .replace(/(\d)(\()/g,"$1*(");
+
+  return exp;
+}
+
+/* ================= CALCULATE ================= */
 
 function calculate(){
+
   try{
-    let e = display.value;
-    if(!e) return;
-    e = smartFix(e);
-    historyExpression.innerText = e;
-    let r = math.evaluate(e,{ans});
-    if(typeof r==="number") r = parseFloat(r.toFixed(10));
-    ans = r;
-    display.value = r;
-    addHistory(e,r);
-  }catch(err){ display.value="Invalid"; }
+
+    let exp = display.value;
+
+    if(!exp) return;
+
+    exp = smartFix(exp);
+
+    historyExpression.innerText =
+    exp;
+
+    let result =
+    math.evaluate(exp,{
+      ans
+    });
+
+    if(typeof result === "number"){
+
+      result =
+      parseFloat(result.toFixed(10));
+    }
+
+    display.value = result;
+
+    ans = result;
+
+    addHistory(exp,result);
+
+  }catch{
+
+    display.value = "Invalid";
+  }
 }
 
-function solveEquation(){
-  try{
-    let eq = display.value;
-    if(!eq.includes("=")){ solverResult.innerHTML="Please enter equation with = sign"; return; }
-    eq = eq.replace(/\s/g,'');
-    const parts = eq.split("=");
-    let left = parts[0].replace(/(\d)x/g,"$1*x");
-    let right = parts[1].replace(/(\d)x/g,"$1*x");
-    const expr = math.simplify(`(${left})-(${right})`).toString();
-    let solutions=[];
-    for(let x=-1000;x<=1000;x+=0.01){
-      let v = math.evaluate(expr,{x});
-      if(Math.abs(v)<0.01){ solutions.push(Number(x.toFixed(2))); if(solutions.length>5) break; }
-    }
-    solutions=[...new Set(solutions)];
-    if(solutions.length===0){ solverResult.innerHTML="No solution found"; return; }
-    solverResult.innerHTML=`Equation:<br><br>${eq}<br><br>Solution:<br><br>x = ${solutions.join(", ")}`;
-  }catch(e){ solverResult.innerHTML="Invalid Equation"; }
-}
+/* ================= HISTORY ================= */
 
 function addHistory(exp,result){
-  const item = document.createElement("div");
-  item.className="history-item";
-  item.innerHTML=`<div class="expression">${exp}</div><div class="answer">${result}</div>`;
-  item.onclick=()=>{ display.value=exp; };
+
+  const item =
+  document.createElement("div");
+
+  item.className = "history-item";
+
+  item.innerHTML = `
+    <div class="expression">
+    ${exp}
+    </div>
+
+    <div class="answer">
+    ${result}
+    </div>
+  `;
+
+  item.onclick = ()=>{
+
+    display.value = exp;
+  };
+
   historyList.prepend(item);
-  saveHistory();
 }
 
-function saveHistory(){ localStorage.setItem("calculator-history",historyList.innerHTML); }
+/* ================= EQUATION SOLVER ================= */
 
-const savedHistory = localStorage.getItem("calculator-history");
-if(savedHistory){
-  historyList.innerHTML=savedHistory;
-  document.querySelectorAll(".history-item").forEach(item=>{
-    item.onclick=()=>{ display.value=item.querySelector(".expression").innerText; };
-  });
+function solveEquation(){
+
+  try{
+
+    let eq =
+    display.value;
+
+    if(!eq.includes("=")){
+
+      solverResult.innerHTML =
+      "Use equation with = sign";
+
+      return;
+    }
+
+    eq = smartFix(eq);
+
+    let parts = eq.split("=");
+
+    let left = parts[0];
+    let right = parts[1];
+
+    const expr =
+    math.simplify(
+      `(${left}) - (${right})`
+    ).toString();
+
+    let solutions = [];
+
+    for(let x=-100;
+    x<=100;
+    x+=0.01){
+
+      let val =
+      math.evaluate(expr,{x});
+
+      if(Math.abs(val)<0.01){
+
+        solutions.push(
+        Number(x.toFixed(2)));
+      }
+    }
+
+    solutions =
+    [...new Set(solutions)];
+
+    if(solutions.length===0){
+
+      solverResult.innerHTML =
+      "No Solution";
+
+      return;
+    }
+
+    solverResult.innerHTML =
+    `
+    Equation:
+    <br><br>
+
+    ${eq}
+
+    <br><br>
+
+    Solution:
+    <br><br>
+
+    x = ${solutions.join(", ")}
+    `;
+
+  }catch{
+
+    solverResult.innerHTML =
+    "Invalid Equation";
+  }
 }
+
+/* ================= THEME ================= */
 
 function setTheme(t){
-  document.body.classList.remove("amoled","neon");
-  if(t!=="default") document.body.classList.add(t);
-  localStorage.setItem("calculator-theme",t);
-  if(document.getElementById("graphPanel").classList.contains("open")) drawGraph();
+
+  document.body.classList.remove(
+  "amoled",
+  "neon");
+
+  if(t!=="default"){
+
+    document.body.classList.add(t);
+  }
 }
-const savedTheme = localStorage.getItem("calculator-theme");
-if(savedTheme) setTheme(savedTheme);
 
-window.addEventListener("beforeunload",()=>{ localStorage.setItem("calculator-ans",ans); });
-const savedAns = localStorage.getItem("calculator-ans");
-if(savedAns) ans = savedAns;
+/* ================= GRAPH ================= */
 
-document.addEventListener("keydown",(e)=>{
-  if((e.key>=0&&e.key<=9)||"+-*/.%()^=x".includes(e.key)) append(e.key);
-  else if(e.key==="Enter") calculate();
-  else if(e.key==="Backspace") backspace();
-  else if(e.key.toLowerCase()==="c") clearDisplay();
-});
+const graphPanel =
+document.getElementById("graphPanel");
 
-/* ========== GRAPHING ========== */
+const graphInput =
+document.getElementById("graphInput");
 
-const COLORS = ["#818cf8","#34d399","#f59e0b","#f472b6","#60a5fa","#fb923c"];
-let fnRows = [];
-let xMin=-10,xMax=10,yMin=-10,yMax=10;
-let isDragging=false, dragStart={x:0,y:0}, viewStart={};
-let hoverX=null;
+const canvas =
+document.getElementById("graphCanvas");
+
+const ctx =
+canvas.getContext("2d");
 
 function openGraph(){
-  const panel = document.getElementById("graphPanel");
-  panel.classList.add("open");
-  if(fnRows.length===0){
-    addFnRow();
-    const currentExpr = display.value.trim();
-    if(currentExpr && !currentExpr.includes("=") && currentExpr!=="Invalid"){
-      document.querySelector(".fn-input").value = currentExpr;
-    }
-  }
-  setTimeout(drawGraph, 50);
+
+  graphPanel.classList.add("open");
+
+  graphInput.value =
+  display.value;
 }
 
 function closeGraph(){
-  document.getElementById("graphPanel").classList.remove("open");
+
+  graphPanel.classList.remove("open");
 }
-
-function addFnRow(){
-  const idx = fnRows.length;
-  const color = COLORS[idx % COLORS.length];
-  const row = document.createElement("div");
-  row.className = "fn-input-row";
-  row.id = "fnrow-"+idx;
-  row.innerHTML = `
-    <div class="fn-dot" style="background:${color}"></div>
-    <input class="fn-input" id="fn-${idx}" placeholder="e.g. sin(x), x^2-3, 2*x+1" />
-    <button class="fn-remove" onclick="removeFnRow(${idx})" title="Remove">✕</button>
-  `;
-  document.getElementById("fnList").appendChild(row);
-  fnRows.push({id:idx, color});
-}
-
-function removeFnRow(idx){
-  const row = document.getElementById("fnrow-"+idx);
-  if(row) row.remove();
-  fnRows = fnRows.filter(f=>f.id!==idx);
-  if(fnRows.length===0) addFnRow();
-  drawGraph();
-}
-
-function zoomIn(){ const cx=(xMax+xMin)/2,cy=(yMax+yMin)/2,hw=(xMax-xMin)/4,hh=(yMax-yMin)/4; xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh; syncInputs(); drawGraph(); }
-function zoomOut(){ const cx=(xMax+xMin)/2,cy=(yMax+yMin)/2,hw=(xMax-xMin),hh=(yMax-yMin); xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh; syncInputs(); drawGraph(); }
-function resetView(){ xMin=-10;xMax=10;yMin=-10;yMax=10; syncInputs(); drawGraph(); }
-function syncInputs(){ document.getElementById("xMin").value=xMin.toFixed(1); document.getElementById("xMax").value=xMax.toFixed(1); document.getElementById("yMin").value=yMin.toFixed(1); document.getElementById("yMax").value=yMax.toFixed(1); }
-
-function updateZoomLabel(){ document.getElementById("zoomLabel").textContent=`x: ${xMin.toFixed(1)} to ${xMax.toFixed(1)}`; }
-
-document.addEventListener("change",(e)=>{
-  if(["xMin","xMax","yMin","yMax"].includes(e.target.id)){
-    xMin=parseFloat(document.getElementById("xMin").value)||xMin;
-    xMax=parseFloat(document.getElementById("xMax").value)||xMax;
-    yMin=parseFloat(document.getElementById("yMin").value)||yMin;
-    yMax=parseFloat(document.getElementById("yMax").value)||yMax;
-    drawGraph();
-  }
-});
 
 function drawGraph(){
-  updateZoomLabel();
-  const canvas = document.getElementById("graphCanvas");
-  const W = canvas.offsetWidth || 700;
-  canvas.width = W * window.devicePixelRatio;
-  canvas.height = canvas.height * window.devicePixelRatio;
-  const ctx = canvas.getContext("2d");
-  const dpr = window.devicePixelRatio;
-  ctx.scale(dpr,dpr);
-  const H = canvas.height / dpr;
 
-  const toCanvasX = x => ((x-xMin)/(xMax-xMin))*W;
-  const toCanvasY = y => H - ((y-yMin)/(yMax-yMin))*H;
-  const toMathX = cx => (cx/W)*(xMax-xMin)+xMin;
+  const expr =
+  graphInput.value.trim();
 
-  // Background
-  ctx.fillStyle="#070e1a";
-  ctx.fillRect(0,0,W,H);
+  if(!expr) return;
 
-  // Grid
-  const xRange=xMax-xMin, yRange=yMax-yMin;
-  const rawXStep=xRange/8, rawYStep=yRange/8;
-  const xStep=niceStep(rawXStep), yStep=niceStep(rawYStep);
+  canvas.width =
+  canvas.offsetWidth;
 
-  ctx.strokeStyle="rgba(255,255,255,0.06)";
-  ctx.lineWidth=1;
-  const xStart=Math.ceil(xMin/xStep)*xStep;
-  for(let x=xStart;x<=xMax;x+=xStep){
-    const cx=toCanvasX(x);
-    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
-  }
-  const yStart=Math.ceil(yMin/yStep)*yStep;
-  for(let y=yStart;y<=yMax;y+=yStep){
-    const cy=toCanvasY(y);
-    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  canvas.height = 420;
+
+  ctx.clearRect(
+  0,0,
+  canvas.width,
+  canvas.height);
+
+  /* GRID */
+
+  ctx.strokeStyle =
+  "rgba(255,255,255,0.08)";
+
+  for(let i=0;
+  i<canvas.width;
+  i+=40){
+
+    ctx.beginPath();
+    ctx.moveTo(i,0);
+    ctx.lineTo(i,canvas.height);
+    ctx.stroke();
   }
 
-  // Axes
-  ctx.strokeStyle="rgba(255,255,255,0.3)";
-  ctx.lineWidth=1.5;
-  const ax=toCanvasX(0), ay=toCanvasY(0);
-  if(ax>=0&&ax<=W){ ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax,H);ctx.stroke(); }
-  if(ay>=0&&ay<=H){ ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke(); }
+  for(let i=0;
+  i<canvas.height;
+  i+=40){
 
-  // Axis labels
-  ctx.fillStyle="rgba(148,163,184,0.7)";
-  ctx.font=`${11*dpr/dpr}px Inter,sans-serif`;
-  ctx.textAlign="center";
-  for(let x=xStart;x<=xMax;x+=xStep){
-    if(Math.abs(x)<1e-10) continue;
-    const cx=toCanvasX(x);
-    const labelY=Math.min(Math.max(ay+16,14),H-6);
-    ctx.fillText(formatLabel(x),cx,labelY);
-  }
-  ctx.textAlign="right";
-  for(let y=yStart;y<=yMax;y+=yStep){
-    if(Math.abs(y)<1e-10) continue;
-    const cy=toCanvasY(y);
-    const labelX=Math.min(Math.max(ax-6,0),W-4);
-    ctx.fillText(formatLabel(y),labelX,cy+4);
+    ctx.beginPath();
+    ctx.moveTo(0,i);
+    ctx.lineTo(canvas.width,i);
+    ctx.stroke();
   }
 
-  // Plot functions
-  let plotted=0;
-  fnRows.forEach(fn=>{
-    const input=document.getElementById("fn-"+fn.id);
-    if(!input) return;
-    const expr=input.value.trim();
-    if(!expr) return;
+  /* AXIS */
+
+  ctx.strokeStyle =
+  "#94a3b8";
+
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(0,canvas.height/2);
+  ctx.lineTo(canvas.width,
+  canvas.height/2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2,0);
+  ctx.lineTo(canvas.width/2,
+  canvas.height);
+  ctx.stroke();
+
+  /* FUNCTION */
+
+  ctx.strokeStyle =
+  "#8b5cf6";
+
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+
+  let started = false;
+
+  for(let px=0;
+  px<canvas.width;
+  px++){
+
+    let x =
+    (px-canvas.width/2)/25;
+
     try{
-      const pts=[];
-      const steps=W*2;
-      for(let i=0;i<=steps;i++){
-        const mx=xMin+(xMax-xMin)*(i/steps);
-        let fixedExpr=expr.replace(/(\d)x/g,"$1*x").replace(/([a-z])\(/g,(m,p1)=>p1+"(");
-        let y=math.evaluate(fixedExpr,{x:mx,pi:Math.PI,e:Math.E});
-        if(isFinite(y)) pts.push({x:toCanvasX(mx),y:toCanvasY(y),valid:true});
-        else pts.push({valid:false});
-      }
-      ctx.strokeStyle=fn.color;
-      ctx.lineWidth=2.5;
-      ctx.lineJoin="round";
-      ctx.beginPath();
-      let penDown=false;
-      for(let i=0;i<pts.length;i++){
-        const p=pts[i];
-        if(!p.valid){ penDown=false; continue; }
-        const outY=p.y<-H*0.5||p.y>H*1.5;
-        if(outY){ penDown=false; continue; }
-        if(!penDown){ ctx.moveTo(p.x,p.y); penDown=true; }
-        else ctx.lineTo(p.x,p.y);
-      }
-      ctx.stroke();
-      plotted++;
-    }catch(e){}
-  });
 
-  // Hover crosshair
-  if(hoverX!==null){
-    const mx=toMathX(hoverX);
-    ctx.strokeStyle="rgba(255,255,255,0.2)";
-    ctx.lineWidth=1;
-    ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.moveTo(hoverX,0);ctx.lineTo(hoverX,H);ctx.stroke();
-    ctx.setLineDash([]);
-    let infoText=`x = ${mx.toFixed(3)}`;
-    fnRows.forEach(fn=>{
-      const input=document.getElementById("fn-"+fn.id);
-      if(!input||!input.value.trim()) return;
-      try{
-        let fe=input.value.trim().replace(/(\d)x/g,"$1*x");
-        const y=math.evaluate(fe,{x:mx,pi:Math.PI,e:Math.E});
-        if(isFinite(y)) infoText+=`  |  y = ${y.toFixed(3)}`;
-      }catch(e){}
-    });
-    document.getElementById("graphInfo").textContent=infoText;
-  }else{
-    document.getElementById("graphInfo").textContent=plotted>0?`${plotted} function(s) plotted — hover to inspect`:"Click Plot to draw functions";
+      let y =
+      math.evaluate(expr,{x});
+
+      let py =
+      canvas.height/2
+      - y*25;
+
+      if(!started){
+
+        ctx.moveTo(px,py);
+        started = true;
+
+      }else{
+
+        ctx.lineTo(px,py);
+      }
+
+    }catch{}
   }
+
+  ctx.stroke();
 }
 
-function niceStep(raw){
-  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
-  const norm=raw/mag;
-  if(norm<1.5) return mag;
-  if(norm<3.5) return 2*mag;
-  if(norm<7.5) return 5*mag;
-  return 10*mag;
-}
-function formatLabel(v){ if(Number.isInteger(v)) return String(v); return v.toFixed(1); }
+/* ================= KEYBOARD ================= */
 
-// Canvas interactions
-const canvasEl=document.getElementById("graphCanvas");
+document.addEventListener(
+"keydown",(e)=>{
 
-canvasEl.addEventListener("mousemove",(e)=>{
-  const rect=canvasEl.getBoundingClientRect();
-  hoverX=e.clientX-rect.left;
-  if(isDragging){
-    const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
-    const W=rect.width, H=rect.height;
-    const xShift=-dx/W*(xMax-xMin);
-    const yShift=dy/H*(yMax-yMin);
-    xMin=viewStart.xMin+xShift; xMax=viewStart.xMax+xShift;
-    yMin=viewStart.yMin+yShift; yMax=viewStart.yMax+yShift;
-    syncInputs();
+  if(
+  (e.key>=0&&e.key<=9)
+  ||
+  "+-*/.%()^=xyabcd"
+  .includes(e.key.toLowerCase())
+  ){
+
+    append(e.key);
   }
-  drawGraph();
+
+  else if(e.key==="Enter"){
+
+    calculate();
+  }
+
+  else if(e.key==="Backspace"){
+
+    backspace();
+  }
+
+  else if(
+  e.key.toLowerCase()==="c"
+  ){
+
+    clearDisplay();
+  }
 });
 
-canvasEl.addEventListener("mouseleave",()=>{ hoverX=null; isDragging=false; drawGraph(); });
-
-canvasEl.addEventListener("mousedown",(e)=>{
-  isDragging=true;
-  dragStart={x:e.clientX,y:e.clientY};
-  viewStart={xMin,xMax,yMin,yMax};
-  canvasEl.style.cursor="grabbing";
-});
-
-canvasEl.addEventListener("mouseup",()=>{ isDragging=false; canvasEl.style.cursor="crosshair"; });
-
-canvasEl.addEventListener("wheel",(e)=>{
-  e.preventDefault();
-  const factor=e.deltaY>0?1.15:0.87;
-  const cx=(xMin+xMax)/2, cy=(yMin+yMax)/2;
-  const hw=(xMax-xMin)/2*factor, hh=(yMax-yMin)/2*factor;
-  xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh;
-  syncInputs(); drawGraph();
-},{passive:false});
-
-// Touch support
-let lastTouchDist=null;
-canvasEl.addEventListener("touchstart",(e)=>{
-  if(e.touches.length===1){
-    const rect=canvasEl.getBoundingClientRect();
-    isDragging=true;
-    dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
-    viewStart={xMin,xMax,yMin,yMax};
-  }
-  if(e.touches.length===2){
-    lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-  }
-},{passive:true});
-
-canvasEl.addEventListener("touchmove",(e)=>{
-  e.preventDefault();
-  if(e.touches.length===1&&isDragging){
-    const rect=canvasEl.getBoundingClientRect();
-    const dx=e.touches[0].clientX-dragStart.x, dy=e.touches[0].clientY-dragStart.y;
-    const xShift=-dx/rect.width*(xMax-xMin);
-    const yShift=dy/rect.height*(yMax-yMin);
-    xMin=viewStart.xMin+xShift; xMax=viewStart.xMax+xShift;
-    yMin=viewStart.yMin+yShift; yMax=viewStart.yMax+yShift;
-    syncInputs(); drawGraph();
-  }
-  if(e.touches.length===2&&lastTouchDist){
-    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    const factor=lastTouchDist/d;
-    const cx=(xMin+xMax)/2, cy=(yMin+yMax)/2;
-    const hw=(xMax-xMin)/2*factor, hh=(yMax-yMin)/2*factor;
-    xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh;
-    lastTouchDist=d; syncInputs(); drawGraph();
-  }
-},{passive:false});
-
-canvasEl.addEventListener("touchend",()=>{ isDragging=false; lastTouchDist=null; });
-
-window.addEventListener("resize",()=>{ if(document.getElementById("graphPanel").classList.contains("open")) drawGraph(); });
 </script>
+
 </body>
 </html>
