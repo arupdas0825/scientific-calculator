@@ -4,1096 +4,576 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Scientific Calculator Pro</title>
-
-<!-- MATH.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
-
 <style>
-
-/* ================= ROOT THEMES ================= */
-
 :root{
-
-    --bg1:#1e293b;
-    --bg2:#020617;
-
-    --card:rgba(15,23,42,0.96);
-
-    --number:#0f172a;
-
-    --function1:#6366f1;
-    --function2:#4f46e5;
-
-    --operator1:#0ea5e9;
-    --operator2:#0284c7;
-
-    --equal1:#14b8a6;
-    --equal2:#0f766e;
+  --bg1:#1e293b;--bg2:#020617;--card:rgba(15,23,42,0.96);
+  --number:#0f172a;--function1:#6366f1;--function2:#4f46e5;
+  --operator1:#0ea5e9;--operator2:#0284c7;--equal1:#14b8a6;--equal2:#0f766e;
 }
+body.amoled{--bg1:#000;--bg2:#000;--card:#000;--number:#050505;--function1:#7c3aed;--function2:#6d28d9;--operator1:#2563eb;--operator2:#1d4ed8;--equal1:#059669;--equal2:#047857;}
+body.neon{--bg1:#111827;--bg2:#020617;--card:#111827;--number:#0f172a;--function1:#a855f7;--function2:#9333ea;--operator1:#06b6d4;--operator2:#0891b2;--equal1:#10b981;--equal2:#059669;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(circle at top,var(--bg1),var(--bg2) 70%);padding:20px;transition:0.3s;gap:0;}
+.wrapper{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;width:100%;max-width:1200px;justify-content:center;}
+.calculator{width:460px;background:var(--card);border-radius:30px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);box-shadow:0 30px 80px rgba(0,0,0,0.55);flex-shrink:0;}
+.top{padding:24px 22px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.title{color:#94a3b8;font-size:12px;letter-spacing:3px;margin-bottom:14px;text-transform:uppercase;}
+.toolbar{display:flex;justify-content:space-between;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.toolbar-left,.toolbar-right{display:flex;gap:8px;flex-wrap:wrap;}
+.theme-btn{border:none;padding:8px 12px;border-radius:10px;cursor:pointer;background:#1e293b;color:white;font-size:11px;font-weight:600;transition:0.2s;height:auto;}
+.theme-btn:hover{opacity:0.8;}
+.solve-btn{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.graph-btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);}
+.history-expression{text-align:right;color:#64748b;min-height:20px;margin-bottom:10px;overflow-x:auto;font-size:14px;}
+.display{width:100%;background:transparent;border:none;outline:none;color:white;text-align:right;font-size:2.8rem;font-weight:700;}
+.keypad{padding:18px;display:flex;flex-direction:column;gap:14px;}
+.scientific-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.main-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+button{border:none;height:64px;border-radius:18px;cursor:pointer;color:white;font-size:17px;font-weight:600;transition:0.2s;box-shadow:inset 0 1px 1px rgba(255,255,255,0.04),0 6px 14px rgba(0,0,0,0.3);}
+button:hover{transform:translateY(-2px);}
+button:active{transform:scale(0.96);}
+.number{background:var(--number);}
+.operator{background:linear-gradient(135deg,var(--operator1),var(--operator2));}
+.function{background:linear-gradient(135deg,var(--function1),var(--function2));}
+.clear{background:linear-gradient(135deg,#ef4444,#dc2626);}
+.equal{background:linear-gradient(135deg,var(--equal1),var(--equal2));height:140px;grid-row:span 2;}
+.zero{grid-column:span 2;}
+.footer{padding:12px;text-align:center;color:#64748b;font-size:11px;border-top:1px solid rgba(255,255,255,0.05);}
 
-/* AMOLED */
+/* SIDE PANEL */
+.side-panel{width:310px;display:flex;flex-direction:column;gap:16px;flex-shrink:0;}
+.panel-box{background:var(--card);border-radius:24px;padding:20px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 20px 50px rgba(0,0,0,0.45);}
+.panel-title{color:white;margin-bottom:16px;font-size:16px;font-weight:700;}
+.history-list{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow:auto;}
+.history-item{background:#0f172a;border-radius:16px;padding:13px;cursor:pointer;transition:0.2s;border:1px solid rgba(255,255,255,0.04);}
+.history-item:hover{background:#172554;}
+.expression{color:#94a3b8;font-size:13px;margin-bottom:4px;word-break:break-all;}
+.answer{color:white;font-size:16px;font-weight:700;}
+.solver-box{background:#0f172a;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05);}
+.solver-title{color:#f59e0b;font-size:14px;font-weight:700;margin-bottom:10px;}
+.solver-result{color:white;font-size:14px;line-height:1.7;}
 
-body.amoled{
+/* GRAPH PANEL */
+.graph-panel{background:var(--card);border-radius:24px;padding:20px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 20px 50px rgba(0,0,0,0.45);width:100%;display:none;}
+.graph-panel.open{display:block;}
+.graph-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.graph-title{color:white;font-size:16px;font-weight:700;}
+.graph-close{background:#1e293b;border:none;color:#94a3b8;font-size:18px;width:32px;height:32px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+.graph-close:hover{background:#334155;color:white;transform:none;}
+.graph-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.fn-input-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.fn-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.fn-input{flex:1;background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;padding:8px 12px;font-size:14px;outline:none;}
+.fn-input:focus{border-color:rgba(139,92,246,0.5);}
+.fn-input::placeholder{color:#475569;}
+.add-fn-btn{background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;color:white;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;height:auto;transition:0.2s;}
+.add-fn-btn:hover{opacity:0.85;transform:none;}
+.plot-btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);border:none;color:white;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;height:auto;transition:0.2s;}
+.plot-btn:hover{opacity:0.85;transform:none;}
+.zoom-controls{display:flex;gap:6px;align-items:center;}
+.zoom-btn{background:#1e293b;border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;transition:0.2s;display:flex;align-items:center;justify-content:center;}
+.zoom-btn:hover{background:#334155;transform:none;}
+.zoom-label{color:#64748b;font-size:12px;min-width:70px;text-align:center;}
+canvas#graphCanvas{width:100%;border-radius:16px;background:#070e1a;display:block;cursor:crosshair;}
+.graph-info{margin-top:8px;color:#475569;font-size:12px;text-align:center;}
+.range-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.range-label{color:#64748b;font-size:12px;}
+.range-input{background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;padding:5px 8px;font-size:13px;width:70px;outline:none;}
+.fn-remove{background:none;border:none;color:#64748b;cursor:pointer;font-size:16px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:0.2s;flex-shrink:0;}
+.fn-remove:hover{color:#ef4444;background:rgba(239,68,68,0.1);transform:none;}
 
-    --bg1:#000;
-    --bg2:#000;
-
-    --card:#000;
-
-    --number:#050505;
-
-    --function1:#7c3aed;
-    --function2:#6d28d9;
-
-    --operator1:#2563eb;
-    --operator2:#1d4ed8;
-
-    --equal1:#059669;
-    --equal2:#047857;
+@media(max-width:1100px){
+  .wrapper{flex-direction:column;align-items:center;}
+  .side-panel{width:460px;}
+  .graph-panel{max-width:460px;}
 }
-
-/* NEON */
-
-body.neon{
-
-    --bg1:#111827;
-    --bg2:#020617;
-
-    --card:#111827;
-
-    --number:#0f172a;
-
-    --function1:#ff00ff;
-    --function2:#c026d3;
-
-    --operator1:#00e5ff;
-    --operator2:#0891b2;
-
-    --equal1:#00ff99;
-    --equal2:#059669;
-}
-
-/* ================= GLOBAL ================= */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Inter,sans-serif;
-}
-
-body{
-
-    min-height:100vh;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    background:
-    radial-gradient(circle at top,
-    var(--bg1),
-    var(--bg2) 70%);
-
-    padding:20px;
-
-    transition:0.3s;
-}
-
-/* ================= WRAPPER ================= */
-
-.wrapper{
-
-    display:flex;
-
-    gap:24px;
-
-    align-items:flex-start;
-
-    flex-wrap:wrap;
-}
-
-/* ================= CALCULATOR ================= */
-
-.calculator{
-
-    width:470px;
-
-    background:var(--card);
-
-    border-radius:30px;
-
-    overflow:hidden;
-
-    border:1px solid rgba(255,255,255,0.06);
-
-    box-shadow:
-    0 30px 80px rgba(0,0,0,0.55);
-}
-
-/* ================= DISPLAY ================= */
-
-.top{
-
-    padding:30px 25px;
-
-    border-bottom:1px solid rgba(255,255,255,0.06);
-}
-
-.title{
-
-    color:#94a3b8;
-
-    font-size:13px;
-
-    letter-spacing:3px;
-
-    margin-bottom:18px;
-
-    text-transform:uppercase;
-}
-
-/* ================= TOOLBAR ================= */
-
-.toolbar{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    gap:10px;
-
-    margin-bottom:20px;
-
-    flex-wrap:wrap;
-}
-
-.toolbar-left,
-.toolbar-right{
-
-    display:flex;
-
-    gap:10px;
-}
-
-.theme-btn{
-
-    border:none;
-
-    padding:10px 14px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
-    background:#1e293b;
-
-    color:white;
-
-    font-size:12px;
-
-    font-weight:600;
-
-    transition:0.2s;
-
-    height:auto;
-}
-
-.theme-btn:hover{
-
-    opacity:0.8;
-}
-
-.solve-btn{
-
-    background:
-    linear-gradient(135deg,#f59e0b,#d97706);
-}
-
-.history-expression{
-
-    text-align:right;
-
-    color:#64748b;
-
-    min-height:22px;
-
-    margin-bottom:12px;
-
-    overflow-x:auto;
-
-    font-size:15px;
-}
-
-.display{
-
-    width:100%;
-
-    background:transparent;
-
-    border:none;
-
-    outline:none;
-
-    color:white;
-
-    text-align:right;
-
-    font-size:3rem;
-
-    font-weight:700;
-}
-
-/* ================= KEYPAD ================= */
-
-.keypad{
-
-    padding:20px;
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:18px;
-}
-
-.scientific-grid{
-
-    display:grid;
-
-    grid-template-columns:repeat(5,1fr);
-
-    gap:12px;
-}
-
-.main-grid{
-
-    display:grid;
-
-    grid-template-columns:repeat(4,1fr);
-
-    gap:14px;
-}
-
-/* ================= BUTTON ================= */
-
-button{
-
-    border:none;
-
-    height:68px;
-
-    border-radius:20px;
-
-    cursor:pointer;
-
-    color:white;
-
-    font-size:18px;
-
-    font-weight:600;
-
-    transition:0.2s;
-
-    box-shadow:
-    inset 0 1px 1px rgba(255,255,255,0.04),
-    0 8px 18px rgba(0,0,0,0.3);
-}
-
-button:hover{
-
-    transform:translateY(-2px);
-}
-
-button:active{
-
-    transform:scale(0.96);
-}
-
-/* ================= TYPES ================= */
-
-.number{
-
-    background:var(--number);
-}
-
-.operator{
-
-    background:
-    linear-gradient(135deg,
-    var(--operator1),
-    var(--operator2));
-}
-
-.function{
-
-    background:
-    linear-gradient(135deg,
-    var(--function1),
-    var(--function2));
-}
-
-.clear{
-
-    background:
-    linear-gradient(135deg,#ef4444,#dc2626);
-}
-
-.equal{
-
-    background:
-    linear-gradient(135deg,
-    var(--equal1),
-    var(--equal2));
-
-    height:150px;
-
-    grid-row:span 2;
-}
-
-.zero{
-
-    grid-column:span 2;
-}
-
-/* ================= HISTORY PANEL ================= */
-
-.side-panel{
-
-    width:320px;
-
-    background:var(--card);
-
-    border-radius:26px;
-
-    padding:22px;
-
-    border:1px solid rgba(255,255,255,0.06);
-
-    box-shadow:
-    0 20px 50px rgba(0,0,0,0.45);
-}
-
-.side-title{
-
-    color:white;
-
-    margin-bottom:18px;
-
-    font-size:18px;
-
-    font-weight:700;
-}
-
-.history-list{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:12px;
-
-    max-height:650px;
-
-    overflow:auto;
-}
-
-.history-item{
-
-    background:#0f172a;
-
-    border-radius:18px;
-
-    padding:15px;
-
-    cursor:pointer;
-
-    transition:0.2s;
-
-    border:1px solid rgba(255,255,255,0.04);
-}
-
-.history-item:hover{
-
-    background:#172554;
-}
-
-.expression{
-
-    color:#94a3b8;
-
-    font-size:14px;
-
-    margin-bottom:6px;
-
-    word-break:break-all;
-}
-
-.answer{
-
-    color:white;
-
-    font-size:18px;
-
-    font-weight:700;
-}
-
-/* ================= SOLVER BOX ================= */
-
-.solver-box{
-
-    margin-top:20px;
-
-    background:#0f172a;
-
-    border-radius:18px;
-
-    padding:18px;
-
-    border:1px solid rgba(255,255,255,0.05);
-}
-
-.solver-title{
-
-    color:#f59e0b;
-
-    font-size:16px;
-
-    font-weight:700;
-
-    margin-bottom:12px;
-}
-
-.solver-result{
-
-    color:white;
-
-    font-size:16px;
-
-    line-height:1.7;
-}
-
-/* ================= FOOTER ================= */
-
-.footer{
-
-    padding:14px;
-
-    text-align:center;
-
-    color:#64748b;
-
-    font-size:12px;
-
-    border-top:1px solid rgba(255,255,255,0.05);
-}
-
-/* ================= MOBILE ================= */
-
-@media(max-width:980px){
-
-    .wrapper{
-
-        justify-content:center;
-    }
-
-    .side-panel{
-
-        width:100%;
-    }
-}
-
 @media(max-width:520px){
-
-    .calculator{
-
-        width:100%;
-    }
-
-    button{
-
-        height:60px;
-
-        font-size:15px;
-    }
-
-    .equal{
-
-        height:134px;
-    }
-
-    .display{
-
-        font-size:2.3rem;
-    }
-
-    .toolbar{
-
-        flex-direction:column;
-    }
+  .calculator,.side-panel,.graph-panel{width:100%;max-width:100%;}
+  button{height:56px;font-size:14px;}
+  .equal{height:124px;}
+  .display{font-size:2.2rem;}
+  canvas#graphCanvas{height:260px !important;}
 }
-
 </style>
 </head>
-
 <body>
-
 <div class="wrapper">
 
-    <!-- ================= CALCULATOR ================= -->
-
-    <div class="calculator">
-
-        <div class="top">
-
-            <div class="title">
-                AI Scientific Calculator Pro
-            </div>
-
-            <!-- TOOLBAR -->
-
-            <div class="toolbar">
-
-                <div class="toolbar-left">
-
-                    <button 
-                        class="theme-btn"
-                        onclick="setTheme('default')"
-                    >
-                        Default
-                    </button>
-
-                    <button 
-                        class="theme-btn"
-                        onclick="setTheme('amoled')"
-                    >
-                        AMOLED
-                    </button>
-
-                    <button 
-                        class="theme-btn"
-                        onclick="setTheme('neon')"
-                    >
-                        Neon
-                    </button>
-
-                </div>
-
-                <div class="toolbar-right">
-
-                    <button 
-                        class="theme-btn solve-btn"
-                        onclick="solveEquation()"
-                    >
-                        Solve x
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div 
-                class="history-expression"
-                id="historyExpression"
-            ></div>
-
-            <input 
-                type="text"
-                id="display"
-                class="display"
-                readonly
-            />
-
+  <!-- CALCULATOR -->
+  <div class="calculator">
+    <div class="top">
+      <div class="title">Scientific Calculator Pro</div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="theme-btn" onclick="setTheme('default')">Default</button>
+          <button class="theme-btn" onclick="setTheme('amoled')">AMOLED</button>
+          <button class="theme-btn" onclick="setTheme('neon')">Neon</button>
         </div>
-
-        <!-- ================= KEYPAD ================= -->
-
-        <div class="keypad">
-
-            <!-- SCIENTIFIC -->
-
-            <div class="scientific-grid">
-
-                <button class="function" onclick="append('sin(')">sin</button>
-
-                <button class="function" onclick="append('cos(')">cos</button>
-
-                <button class="function" onclick="append('tan(')">tan</button>
-
-                <button class="function" onclick="append('log(')">log</button>
-
-                <button class="function" onclick="append('ln(')">ln</button>
-
-                <button class="function" onclick="append('sqrt(')">√</button>
-
-                <button class="function" onclick="append('^')">xʸ</button>
-
-                <button class="function" onclick="append('!')">x!</button>
-
-                <button class="function" onclick="append('pi')">π</button>
-
-                <button class="function" onclick="append('e')">e</button>
-
-            </div>
-
-            <!-- MAIN GRID -->
-
-            <div class="main-grid">
-
-                <button class="clear" onclick="clearDisplay()">AC</button>
-
-                <button class="function" onclick="backspace()">⌫</button>
-
-                <button class="function" onclick="append('(')">(</button>
-
-                <button class="operator" onclick="append('/')">÷</button>
-
-                <button class="number" onclick="append('7')">7</button>
-
-                <button class="number" onclick="append('8')">8</button>
-
-                <button class="number" onclick="append('9')">9</button>
-
-                <button class="operator" onclick="append('*')">×</button>
-
-                <button class="number" onclick="append('4')">4</button>
-
-                <button class="number" onclick="append('5')">5</button>
-
-                <button class="number" onclick="append('6')">6</button>
-
-                <button class="operator" onclick="append('-')">−</button>
-
-                <button class="number" onclick="append('1')">1</button>
-
-                <button class="number" onclick="append('2')">2</button>
-
-                <button class="number" onclick="append('3')">3</button>
-
-                <button class="operator" onclick="append('+')">+</button>
-
-                <button class="number zero" onclick="append('0')">0</button>
-
-                <button class="number" onclick="append('.')">.</button>
-
-                <button class="equal" onclick="calculate()">=</button>
-
-            </div>
-
+        <div class="toolbar-right">
+          <button class="theme-btn graph-btn" onclick="openGraph()">📈 Graph</button>
+          <button class="theme-btn solve-btn" onclick="solveEquation()">Solve x</button>
         </div>
-
-        <div class="footer">
-            Equation Solver System + Persistent Theme & History
-        </div>
-
+      </div>
+      <div class="history-expression" id="historyExpression"></div>
+      <input type="text" id="display" class="display" readonly/>
     </div>
 
-    <!-- ================= SIDE PANEL ================= -->
-
-    <div class="side-panel">
-
-        <div class="side-title">
-            Calculation History
-        </div>
-
-        <div 
-            class="history-list"
-            id="historyList"
-        ></div>
-
-        <!-- EQUATION SOLVER -->
-
-        <div class="solver-box">
-
-            <div class="solver-title">
-                Equation Solver
-            </div>
-
-            <div 
-                class="solver-result"
-                id="solverResult"
-            >
-                Enter equation like:
-                <br>
-                2x+5=15
-            </div>
-
-        </div>
-
+    <div class="keypad">
+      <div class="scientific-grid">
+        <button class="function" onclick="append('sin(')">sin</button>
+        <button class="function" onclick="append('cos(')">cos</button>
+        <button class="function" onclick="append('tan(')">tan</button>
+        <button class="function" onclick="append('log(')">log</button>
+        <button class="function" onclick="append('ln(')">ln</button>
+        <button class="function" onclick="append('sqrt(')">√</button>
+        <button class="function" onclick="append('^')">xʸ</button>
+        <button class="function" onclick="append('!')">x!</button>
+        <button class="function" onclick="append('pi')">π</button>
+        <button class="function" onclick="append('e')">e</button>
+      </div>
+      <div class="main-grid">
+        <button class="clear" onclick="clearDisplay()">AC</button>
+        <button class="function" onclick="backspace()">⌫</button>
+        <button class="function" onclick="append('(')">(</button>
+        <button class="operator" onclick="append('/')">÷</button>
+        <button class="number" onclick="append('7')">7</button>
+        <button class="number" onclick="append('8')">8</button>
+        <button class="number" onclick="append('9')">9</button>
+        <button class="operator" onclick="append('*')">×</button>
+        <button class="number" onclick="append('4')">4</button>
+        <button class="number" onclick="append('5')">5</button>
+        <button class="number" onclick="append('6')">6</button>
+        <button class="operator" onclick="append('-')">−</button>
+        <button class="number" onclick="append('1')">1</button>
+        <button class="number" onclick="append('2')">2</button>
+        <button class="number" onclick="append('3')">3</button>
+        <button class="operator" onclick="append('+')">+</button>
+        <button class="number zero" onclick="append('0')">0</button>
+        <button class="number" onclick="append('.')">.</button>
+        <button class="equal" onclick="calculate()">=</button>
+      </div>
     </div>
+    <div class="footer">Graph • Equation Solver • History</div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div class="panel-box">
+      <div class="panel-title">Calculation History</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+    <div class="panel-box">
+      <div class="solver-box" style="background:transparent;padding:0;border:none;">
+        <div class="solver-title">Equation Solver</div>
+        <div class="solver-result" id="solverResult">Enter equation like:<br>2x+5=15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAPH PANEL — full width row -->
+  <div class="graph-panel" id="graphPanel">
+    <div class="graph-header">
+      <div class="graph-title">📈 Function Grapher</div>
+      <button class="graph-close" onclick="closeGraph()">✕</button>
+    </div>
+
+    <div id="fnList"></div>
+
+    <div class="graph-controls">
+      <button class="add-fn-btn" onclick="addFnRow()">+ Add Function</button>
+      <button class="plot-btn" onclick="drawGraph()">Plot</button>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()">+</button>
+        <span class="zoom-label" id="zoomLabel">x: −10 to 10</span>
+        <button class="zoom-btn" onclick="zoomOut()">−</button>
+        <button class="zoom-btn" onclick="resetView()" title="Reset">⟳</button>
+      </div>
+    </div>
+
+    <div class="range-row">
+      <span class="range-label">x from</span>
+      <input class="range-input" id="xMin" type="number" value="-10"/>
+      <span class="range-label">to</span>
+      <input class="range-input" id="xMax" type="number" value="10"/>
+      <span class="range-label">y from</span>
+      <input class="range-input" id="yMin" type="number" value="-10"/>
+      <span class="range-label">to</span>
+      <input class="range-input" id="yMax" type="number" value="10"/>
+    </div>
+
+    <canvas id="graphCanvas" height="380"></canvas>
+    <div class="graph-info" id="graphInfo">Click Plot to draw functions</div>
+  </div>
 
 </div>
 
 <script>
-
-/* ================= ELEMENTS ================= */
-
-const display =
-document.getElementById("display");
-
-const historyExpression =
-document.getElementById("historyExpression");
-
-const historyList =
-document.getElementById("historyList");
-
-const solverResult =
-document.getElementById("solverResult");
-
-/* ================= MEMORY ================= */
+const display = document.getElementById("display");
+const historyExpression = document.getElementById("historyExpression");
+const historyList = document.getElementById("historyList");
+const solverResult = document.getElementById("solverResult");
 
 let ans = 0;
 
-/* ================= BASIC ================= */
+function append(v){ display.value += v; }
+function clearDisplay(){ display.value=""; historyExpression.innerText=""; }
+function backspace(){ display.value = display.value.slice(0,-1); }
 
-function append(value){
-
-    display.value += value;
+function smartFix(e){
+  e = e.replace(/÷/g,"/").replace(/×/g,"*");
+  let o=(e.match(/\(/g)||[]).length, c=(e.match(/\)/g)||[]).length;
+  while(c<o){e+=")";c++;}
+  e = e.replace(/([+\-*/]){2,}/g,m=>m.slice(-1));
+  e = e.replace(/(\d)(\()/g,"$1*(").replace(/(\))(\d)/g,")*$2").replace(/(\d)x/g,"$1*x");
+  return e;
 }
-
-function clearDisplay(){
-
-    display.value = "";
-
-    historyExpression.innerText = "";
-}
-
-function backspace(){
-
-    display.value =
-    display.value.slice(0,-1);
-}
-
-/* ================= SMART FIX ================= */
-
-function smartFix(expression){
-
-    expression = expression
-    .replace(/÷/g,"/")
-    .replace(/×/g,"*");
-
-    let open =
-    (expression.match(/\(/g)||[]).length;
-
-    let close =
-    (expression.match(/\)/g)||[]).length;
-
-    while(close < open){
-
-        expression += ")";
-        close++;
-    }
-
-    expression =
-    expression.replace(/([+\-*/]){2,}/g,
-    (match)=>match.slice(-1));
-
-    expression =
-    expression.replace(/(\d)(\()/g,"$1*(");
-
-    expression =
-    expression.replace(/(\))(\d)/g,")*$2");
-
-    expression =
-    expression.replace(/(\d)x/g,"$1*x");
-
-    return expression;
-}
-
-/* ================= CALCULATE ================= */
 
 function calculate(){
-
-    try{
-
-        let expression =
-        display.value;
-
-        if(!expression) return;
-
-        expression =
-        smartFix(expression);
-
-        historyExpression.innerText =
-        expression;
-
-        let result =
-        math.evaluate(expression,{
-            ans:ans
-        });
-
-        if(typeof result === "number"){
-
-            result =
-            parseFloat(result.toFixed(10));
-        }
-
-        ans = result;
-
-        display.value = result;
-
-        addHistory(expression,result);
-
-    }catch(error){
-
-        display.value = "Invalid";
-    }
+  try{
+    let e = display.value;
+    if(!e) return;
+    e = smartFix(e);
+    historyExpression.innerText = e;
+    let r = math.evaluate(e,{ans});
+    if(typeof r==="number") r = parseFloat(r.toFixed(10));
+    ans = r;
+    display.value = r;
+    addHistory(e,r);
+  }catch(err){ display.value="Invalid"; }
 }
-
-/* ================= EQUATION SOLVER ================= */
 
 function solveEquation(){
-
-    try{
-
-        let equation =
-        display.value;
-
-        if(!equation.includes("=")){
-
-            solverResult.innerHTML =
-            "Please enter equation with = sign";
-
-            return;
-        }
-
-        equation =
-        equation.replace(/\s/g,'');
-
-        const parts =
-        equation.split("=");
-
-        let left = parts[0];
-        let right = parts[1];
-
-        left =
-        left.replace(/(\d)x/g,"$1*x");
-
-        right =
-        right.replace(/(\d)x/g,"$1*x");
-
-        const expr =
-        math.simplify(
-            `(${left}) - (${right})`
-        );
-
-        const compiled =
-        expr.toString();
-
-        let solutions = [];
-
-        for(let x = -1000; x <= 1000; x += 0.01){
-
-            let value =
-            math.evaluate(compiled,{x});
-
-            if(Math.abs(value) < 0.01){
-
-                solutions.push(
-                    Number(x.toFixed(2))
-                );
-
-                if(solutions.length > 5){
-                    break;
-                }
-            }
-        }
-
-        solutions =
-        [...new Set(solutions)];
-
-        if(solutions.length === 0){
-
-            solverResult.innerHTML =
-            "No solution found";
-
-            return;
-        }
-
-        solverResult.innerHTML =
-        `
-        Equation:
-        <br><br>
-
-        ${equation}
-
-        <br><br>
-
-        Solution:
-        <br><br>
-
-        x = ${solutions.join(", ")}
-        `;
-
-    }catch(error){
-
-        solverResult.innerHTML =
-        "Invalid Equation";
+  try{
+    let eq = display.value;
+    if(!eq.includes("=")){ solverResult.innerHTML="Please enter equation with = sign"; return; }
+    eq = eq.replace(/\s/g,'');
+    const parts = eq.split("=");
+    let left = parts[0].replace(/(\d)x/g,"$1*x");
+    let right = parts[1].replace(/(\d)x/g,"$1*x");
+    const expr = math.simplify(`(${left})-(${right})`).toString();
+    let solutions=[];
+    for(let x=-1000;x<=1000;x+=0.01){
+      let v = math.evaluate(expr,{x});
+      if(Math.abs(v)<0.01){ solutions.push(Number(x.toFixed(2))); if(solutions.length>5) break; }
     }
+    solutions=[...new Set(solutions)];
+    if(solutions.length===0){ solverResult.innerHTML="No solution found"; return; }
+    solverResult.innerHTML=`Equation:<br><br>${eq}<br><br>Solution:<br><br>x = ${solutions.join(", ")}`;
+  }catch(e){ solverResult.innerHTML="Invalid Equation"; }
 }
-
-/* ================= HISTORY ================= */
 
 function addHistory(exp,result){
-
-    const item =
-    document.createElement("div");
-
-    item.className = "history-item";
-
-    item.innerHTML = `
-
-        <div class="expression">
-            ${exp}
-        </div>
-
-        <div class="answer">
-            ${result}
-        </div>
-
-    `;
-
-    item.onclick = ()=>{
-
-        display.value = exp;
-    };
-
-    historyList.prepend(item);
-
-    saveHistory();
+  const item = document.createElement("div");
+  item.className="history-item";
+  item.innerHTML=`<div class="expression">${exp}</div><div class="answer">${result}</div>`;
+  item.onclick=()=>{ display.value=exp; };
+  historyList.prepend(item);
+  saveHistory();
 }
 
-/* ================= SAVE HISTORY ================= */
+function saveHistory(){ localStorage.setItem("calculator-history",historyList.innerHTML); }
 
-function saveHistory(){
-
-    localStorage.setItem(
-        "calculator-history",
-        historyList.innerHTML
-    );
-}
-
-/* LOAD HISTORY */
-
-const savedHistory =
-localStorage.getItem(
-    "calculator-history"
-);
-
+const savedHistory = localStorage.getItem("calculator-history");
 if(savedHistory){
-
-    historyList.innerHTML =
-    savedHistory;
-
-    document
-    .querySelectorAll(".history-item")
-    .forEach(item=>{
-
-        item.onclick = ()=>{
-
-            const exp =
-            item.querySelector(
-                ".expression"
-            ).innerText;
-
-            display.value = exp;
-        };
-    });
+  historyList.innerHTML=savedHistory;
+  document.querySelectorAll(".history-item").forEach(item=>{
+    item.onclick=()=>{ display.value=item.querySelector(".expression").innerText; };
+  });
 }
 
-/* ================= THEME ================= */
-
-function setTheme(theme){
-
-    document.body.classList.remove(
-        "amoled",
-        "neon"
-    );
-
-    if(theme !== "default"){
-
-        document.body.classList.add(theme);
-    }
-
-    localStorage.setItem(
-        "calculator-theme",
-        theme
-    );
+function setTheme(t){
+  document.body.classList.remove("amoled","neon");
+  if(t!=="default") document.body.classList.add(t);
+  localStorage.setItem("calculator-theme",t);
+  if(document.getElementById("graphPanel").classList.contains("open")) drawGraph();
 }
+const savedTheme = localStorage.getItem("calculator-theme");
+if(savedTheme) setTheme(savedTheme);
 
-/* LOAD THEME */
-
-const savedTheme =
-localStorage.getItem(
-    "calculator-theme"
-);
-
-if(savedTheme){
-
-    setTheme(savedTheme);
-}
-
-/* ================= SAVE MEMORY ================= */
-
-window.addEventListener(
-    "beforeunload",
-    ()=>{
-
-        localStorage.setItem(
-            "calculator-ans",
-            ans
-        );
-    }
-);
-
-/* LOAD MEMORY */
-
-const savedAns =
-localStorage.getItem(
-    "calculator-ans"
-);
-
-if(savedAns){
-
-    ans = savedAns;
-}
-
-/* ================= KEYBOARD ================= */
+window.addEventListener("beforeunload",()=>{ localStorage.setItem("calculator-ans",ans); });
+const savedAns = localStorage.getItem("calculator-ans");
+if(savedAns) ans = savedAns;
 
 document.addEventListener("keydown",(e)=>{
-
-    if(
-
-        (e.key >= 0 && e.key <= 9)
-
-        ||
-
-        "+-*/.%()^=x".includes(e.key)
-
-    ){
-
-        append(e.key);
-    }
-
-    else if(e.key === "Enter"){
-
-        calculate();
-    }
-
-    else if(e.key === "Backspace"){
-
-        backspace();
-    }
-
-    else if(e.key.toLowerCase() === "c"){
-
-        clearDisplay();
-    }
+  if((e.key>=0&&e.key<=9)||"+-*/.%()^=x".includes(e.key)) append(e.key);
+  else if(e.key==="Enter") calculate();
+  else if(e.key==="Backspace") backspace();
+  else if(e.key.toLowerCase()==="c") clearDisplay();
 });
 
-</script>
+/* ========== GRAPHING ========== */
 
+const COLORS = ["#818cf8","#34d399","#f59e0b","#f472b6","#60a5fa","#fb923c"];
+let fnRows = [];
+let xMin=-10,xMax=10,yMin=-10,yMax=10;
+let isDragging=false, dragStart={x:0,y:0}, viewStart={};
+let hoverX=null;
+
+function openGraph(){
+  const panel = document.getElementById("graphPanel");
+  panel.classList.add("open");
+  if(fnRows.length===0){
+    addFnRow();
+    const currentExpr = display.value.trim();
+    if(currentExpr && !currentExpr.includes("=") && currentExpr!=="Invalid"){
+      document.querySelector(".fn-input").value = currentExpr;
+    }
+  }
+  setTimeout(drawGraph, 50);
+}
+
+function closeGraph(){
+  document.getElementById("graphPanel").classList.remove("open");
+}
+
+function addFnRow(){
+  const idx = fnRows.length;
+  const color = COLORS[idx % COLORS.length];
+  const row = document.createElement("div");
+  row.className = "fn-input-row";
+  row.id = "fnrow-"+idx;
+  row.innerHTML = `
+    <div class="fn-dot" style="background:${color}"></div>
+    <input class="fn-input" id="fn-${idx}" placeholder="e.g. sin(x), x^2-3, 2*x+1" />
+    <button class="fn-remove" onclick="removeFnRow(${idx})" title="Remove">✕</button>
+  `;
+  document.getElementById("fnList").appendChild(row);
+  fnRows.push({id:idx, color});
+}
+
+function removeFnRow(idx){
+  const row = document.getElementById("fnrow-"+idx);
+  if(row) row.remove();
+  fnRows = fnRows.filter(f=>f.id!==idx);
+  if(fnRows.length===0) addFnRow();
+  drawGraph();
+}
+
+function zoomIn(){ const cx=(xMax+xMin)/2,cy=(yMax+yMin)/2,hw=(xMax-xMin)/4,hh=(yMax-yMin)/4; xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh; syncInputs(); drawGraph(); }
+function zoomOut(){ const cx=(xMax+xMin)/2,cy=(yMax+yMin)/2,hw=(xMax-xMin),hh=(yMax-yMin); xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh; syncInputs(); drawGraph(); }
+function resetView(){ xMin=-10;xMax=10;yMin=-10;yMax=10; syncInputs(); drawGraph(); }
+function syncInputs(){ document.getElementById("xMin").value=xMin.toFixed(1); document.getElementById("xMax").value=xMax.toFixed(1); document.getElementById("yMin").value=yMin.toFixed(1); document.getElementById("yMax").value=yMax.toFixed(1); }
+
+function updateZoomLabel(){ document.getElementById("zoomLabel").textContent=`x: ${xMin.toFixed(1)} to ${xMax.toFixed(1)}`; }
+
+document.addEventListener("change",(e)=>{
+  if(["xMin","xMax","yMin","yMax"].includes(e.target.id)){
+    xMin=parseFloat(document.getElementById("xMin").value)||xMin;
+    xMax=parseFloat(document.getElementById("xMax").value)||xMax;
+    yMin=parseFloat(document.getElementById("yMin").value)||yMin;
+    yMax=parseFloat(document.getElementById("yMax").value)||yMax;
+    drawGraph();
+  }
+});
+
+function drawGraph(){
+  updateZoomLabel();
+  const canvas = document.getElementById("graphCanvas");
+  const W = canvas.offsetWidth || 700;
+  canvas.width = W * window.devicePixelRatio;
+  canvas.height = canvas.height * window.devicePixelRatio;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio;
+  ctx.scale(dpr,dpr);
+  const H = canvas.height / dpr;
+
+  const toCanvasX = x => ((x-xMin)/(xMax-xMin))*W;
+  const toCanvasY = y => H - ((y-yMin)/(yMax-yMin))*H;
+  const toMathX = cx => (cx/W)*(xMax-xMin)+xMin;
+
+  // Background
+  ctx.fillStyle="#070e1a";
+  ctx.fillRect(0,0,W,H);
+
+  // Grid
+  const xRange=xMax-xMin, yRange=yMax-yMin;
+  const rawXStep=xRange/8, rawYStep=yRange/8;
+  const xStep=niceStep(rawXStep), yStep=niceStep(rawYStep);
+
+  ctx.strokeStyle="rgba(255,255,255,0.06)";
+  ctx.lineWidth=1;
+  const xStart=Math.ceil(xMin/xStep)*xStep;
+  for(let x=xStart;x<=xMax;x+=xStep){
+    const cx=toCanvasX(x);
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  }
+  const yStart=Math.ceil(yMin/yStep)*yStep;
+  for(let y=yStart;y<=yMax;y+=yStep){
+    const cy=toCanvasY(y);
+    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle="rgba(255,255,255,0.3)";
+  ctx.lineWidth=1.5;
+  const ax=toCanvasX(0), ay=toCanvasY(0);
+  if(ax>=0&&ax<=W){ ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax,H);ctx.stroke(); }
+  if(ay>=0&&ay<=H){ ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke(); }
+
+  // Axis labels
+  ctx.fillStyle="rgba(148,163,184,0.7)";
+  ctx.font=`${11*dpr/dpr}px Inter,sans-serif`;
+  ctx.textAlign="center";
+  for(let x=xStart;x<=xMax;x+=xStep){
+    if(Math.abs(x)<1e-10) continue;
+    const cx=toCanvasX(x);
+    const labelY=Math.min(Math.max(ay+16,14),H-6);
+    ctx.fillText(formatLabel(x),cx,labelY);
+  }
+  ctx.textAlign="right";
+  for(let y=yStart;y<=yMax;y+=yStep){
+    if(Math.abs(y)<1e-10) continue;
+    const cy=toCanvasY(y);
+    const labelX=Math.min(Math.max(ax-6,0),W-4);
+    ctx.fillText(formatLabel(y),labelX,cy+4);
+  }
+
+  // Plot functions
+  let plotted=0;
+  fnRows.forEach(fn=>{
+    const input=document.getElementById("fn-"+fn.id);
+    if(!input) return;
+    const expr=input.value.trim();
+    if(!expr) return;
+    try{
+      const pts=[];
+      const steps=W*2;
+      for(let i=0;i<=steps;i++){
+        const mx=xMin+(xMax-xMin)*(i/steps);
+        let fixedExpr=expr.replace(/(\d)x/g,"$1*x").replace(/([a-z])\(/g,(m,p1)=>p1+"(");
+        let y=math.evaluate(fixedExpr,{x:mx,pi:Math.PI,e:Math.E});
+        if(isFinite(y)) pts.push({x:toCanvasX(mx),y:toCanvasY(y),valid:true});
+        else pts.push({valid:false});
+      }
+      ctx.strokeStyle=fn.color;
+      ctx.lineWidth=2.5;
+      ctx.lineJoin="round";
+      ctx.beginPath();
+      let penDown=false;
+      for(let i=0;i<pts.length;i++){
+        const p=pts[i];
+        if(!p.valid){ penDown=false; continue; }
+        const outY=p.y<-H*0.5||p.y>H*1.5;
+        if(outY){ penDown=false; continue; }
+        if(!penDown){ ctx.moveTo(p.x,p.y); penDown=true; }
+        else ctx.lineTo(p.x,p.y);
+      }
+      ctx.stroke();
+      plotted++;
+    }catch(e){}
+  });
+
+  // Hover crosshair
+  if(hoverX!==null){
+    const mx=toMathX(hoverX);
+    ctx.strokeStyle="rgba(255,255,255,0.2)";
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(hoverX,0);ctx.lineTo(hoverX,H);ctx.stroke();
+    ctx.setLineDash([]);
+    let infoText=`x = ${mx.toFixed(3)}`;
+    fnRows.forEach(fn=>{
+      const input=document.getElementById("fn-"+fn.id);
+      if(!input||!input.value.trim()) return;
+      try{
+        let fe=input.value.trim().replace(/(\d)x/g,"$1*x");
+        const y=math.evaluate(fe,{x:mx,pi:Math.PI,e:Math.E});
+        if(isFinite(y)) infoText+=`  |  y = ${y.toFixed(3)}`;
+      }catch(e){}
+    });
+    document.getElementById("graphInfo").textContent=infoText;
+  }else{
+    document.getElementById("graphInfo").textContent=plotted>0?`${plotted} function(s) plotted — hover to inspect`:"Click Plot to draw functions";
+  }
+}
+
+function niceStep(raw){
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const norm=raw/mag;
+  if(norm<1.5) return mag;
+  if(norm<3.5) return 2*mag;
+  if(norm<7.5) return 5*mag;
+  return 10*mag;
+}
+function formatLabel(v){ if(Number.isInteger(v)) return String(v); return v.toFixed(1); }
+
+// Canvas interactions
+const canvasEl=document.getElementById("graphCanvas");
+
+canvasEl.addEventListener("mousemove",(e)=>{
+  const rect=canvasEl.getBoundingClientRect();
+  hoverX=e.clientX-rect.left;
+  if(isDragging){
+    const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
+    const W=rect.width, H=rect.height;
+    const xShift=-dx/W*(xMax-xMin);
+    const yShift=dy/H*(yMax-yMin);
+    xMin=viewStart.xMin+xShift; xMax=viewStart.xMax+xShift;
+    yMin=viewStart.yMin+yShift; yMax=viewStart.yMax+yShift;
+    syncInputs();
+  }
+  drawGraph();
+});
+
+canvasEl.addEventListener("mouseleave",()=>{ hoverX=null; isDragging=false; drawGraph(); });
+
+canvasEl.addEventListener("mousedown",(e)=>{
+  isDragging=true;
+  dragStart={x:e.clientX,y:e.clientY};
+  viewStart={xMin,xMax,yMin,yMax};
+  canvasEl.style.cursor="grabbing";
+});
+
+canvasEl.addEventListener("mouseup",()=>{ isDragging=false; canvasEl.style.cursor="crosshair"; });
+
+canvasEl.addEventListener("wheel",(e)=>{
+  e.preventDefault();
+  const factor=e.deltaY>0?1.15:0.87;
+  const cx=(xMin+xMax)/2, cy=(yMin+yMax)/2;
+  const hw=(xMax-xMin)/2*factor, hh=(yMax-yMin)/2*factor;
+  xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh;
+  syncInputs(); drawGraph();
+},{passive:false});
+
+// Touch support
+let lastTouchDist=null;
+canvasEl.addEventListener("touchstart",(e)=>{
+  if(e.touches.length===1){
+    const rect=canvasEl.getBoundingClientRect();
+    isDragging=true;
+    dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    viewStart={xMin,xMax,yMin,yMax};
+  }
+  if(e.touches.length===2){
+    lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  }
+},{passive:true});
+
+canvasEl.addEventListener("touchmove",(e)=>{
+  e.preventDefault();
+  if(e.touches.length===1&&isDragging){
+    const rect=canvasEl.getBoundingClientRect();
+    const dx=e.touches[0].clientX-dragStart.x, dy=e.touches[0].clientY-dragStart.y;
+    const xShift=-dx/rect.width*(xMax-xMin);
+    const yShift=dy/rect.height*(yMax-yMin);
+    xMin=viewStart.xMin+xShift; xMax=viewStart.xMax+xShift;
+    yMin=viewStart.yMin+yShift; yMax=viewStart.yMax+yShift;
+    syncInputs(); drawGraph();
+  }
+  if(e.touches.length===2&&lastTouchDist){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    const factor=lastTouchDist/d;
+    const cx=(xMin+xMax)/2, cy=(yMin+yMax)/2;
+    const hw=(xMax-xMin)/2*factor, hh=(yMax-yMin)/2*factor;
+    xMin=cx-hw;xMax=cx+hw;yMin=cy-hh;yMax=cy+hh;
+    lastTouchDist=d; syncInputs(); drawGraph();
+  }
+},{passive:false});
+
+canvasEl.addEventListener("touchend",()=>{ isDragging=false; lastTouchDist=null; });
+
+window.addEventListener("resize",()=>{ if(document.getElementById("graphPanel").classList.contains("open")) drawGraph(); });
+</script>
 </body>
 </html>
