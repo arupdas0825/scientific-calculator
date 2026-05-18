@@ -23,7 +23,7 @@
 
 <br>
 
-<img width="1449" height="867" alt="CALC∞ Preview" src="https://github.com/user-attachments/assets/07c49eb7-4f1a-4d6e-850e-b608fb16f9bf" />
+<img width="1918" height="971" alt="image" src="https://github.com/user-attachments/assets/faa88906-39f5-4e40-95e4-b81ec983725a" />
 
 <br>
 
