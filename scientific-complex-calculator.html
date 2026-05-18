@@ -632,6 +632,7 @@ body::before {
   .workspace-tabs { overflow-x: auto; }
   .workspace-tabs::-webkit-scrollbar { display: none; }
 }
+
 /* KEY PRESS ANIMATION */
 @keyframes key-press {
   0% { transform: scale(1); }
@@ -886,3 +887,746 @@ function updateClock() {
     String(t.getSeconds()).padStart(2,'0');
 }
 setInterval(updateClock, 1000); updateClock();
+
+/* ============================================================
+   ANGLE MODE
+   ============================================================ */
+function setAngle(mode) {
+  state.angleMode = mode;
+  $d('btnDeg').classList.toggle('active', mode==='deg');
+  $d('btnRad').classList.toggle('active', mode==='rad');
+  toast('Angle mode: ' + mode.toUpperCase());
+}
+
+/* ============================================================
+   KEYPAD LAYOUTS
+   ============================================================ */
+const layouts = {
+  std: [
+    // row 1
+    [
+      {l:'MC', cls:'key-mem', a:()=>memClear()},
+      {l:'MR', cls:'key-mem', a:()=>memRecall()},
+      {l:'M+', cls:'key-mem', a:()=>memAdd()},
+      {l:'M−', cls:'key-mem', a:()=>memSub()},
+      {l:'2ⁿᵈ', cls:'key-2nd', a:()=>toggle2nd()},
+    ],
+    // row 2
+    [
+      {l:'sin', cls:'key-fn', a:()=>inp(state.is2nd?'asin(':'sin('), sub:state.is2nd?'sin⁻¹':''},
+      {l:'cos', cls:'key-fn', a:()=>inp(state.is2nd?'acos(':'cos('), sub:state.is2nd?'cos⁻¹':''},
+      {l:'tan', cls:'key-fn', a:()=>inp(state.is2nd?'atan(':'tan('), sub:state.is2nd?'tan⁻¹':''},
+      {l:'log', cls:'key-fn', a:()=>inp(state.is2nd?'log2(':'log10('), sub:state.is2nd?'log₂':'log₁₀'},
+      {l:'ln',  cls:'key-fn', a:()=>inp('log(')},
+    ],
+    // row 3
+    [
+      {l:'x²',  cls:'key-fn', a:()=>inp('^2')},
+      {l:'x³',  cls:'key-fn', a:()=>inp('^3')},
+      {l:'xʸ',  cls:'key-fn', a:()=>inp('^')},
+      {l:'√',   cls:'key-fn', a:()=>inp('sqrt(')},
+      {l:'∛',   cls:'key-fn', a:()=>inp('cbrt(')},
+    ],
+    // row 4
+    [
+      {l:'(',   cls:'key-op', a:()=>inp('(')},
+      {l:')',   cls:'key-op', a:()=>inp(')')},
+      {l:'π',   cls:'key-special', a:()=>inp('pi')},
+      {l:'e',   cls:'key-special', a:()=>inp('e')},
+      {l:'%',   cls:'key-op', a:()=>inp('%')},
+    ],
+    // row 5
+    [
+      {l:'7', cls:'key-num', a:()=>inp('7')},
+      {l:'8', cls:'key-num', a:()=>inp('8')},
+      {l:'9', cls:'key-num', a:()=>inp('9')},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
+      {l:'⌫', cls:'key-del', a:()=>delChar()},
+    ],
+    // row 6
+    [
+      {l:'4', cls:'key-num', a:()=>inp('4')},
+      {l:'5', cls:'key-num', a:()=>inp('5')},
+      {l:'6', cls:'key-num', a:()=>inp('6')},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
+      {l:'AC', cls:'key-clear', a:()=>clearAll()},
+    ],
+    // row 7
+    [
+      {l:'1', cls:'key-num', a:()=>inp('1')},
+      {l:'2', cls:'key-num', a:()=>inp('2')},
+      {l:'3', cls:'key-num', a:()=>inp('3')},
+      {l:'−', cls:'key-op',  a:()=>inp('-')},
+      {l:'ANS', cls:'key-special', a:()=>inpAns(), sub:'last'},
+    ],
+    // row 8
+    [
+      {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
+      {l:'.', cls:'key-num', a:()=>inp('.')},
+      {l:'=', cls:'key-eq',  a:()=>calculate()},
+      {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+  ],
+  sci: [
+    [
+      {l:'MC', cls:'key-mem', a:()=>memClear()},
+      {l:'MR', cls:'key-mem', a:()=>memRecall()},
+      {l:'M+', cls:'key-mem', a:()=>memAdd()},
+      {l:'M−', cls:'key-mem', a:()=>memSub()},
+      {l:'2ⁿᵈ', cls:'key-2nd', a:()=>toggle2nd()},
+    ],
+    [
+      {l:'sin', cls:'key-fn', a:()=>inp(state.is2nd?'asin(':'sin(')},
+      {l:'cos', cls:'key-fn', a:()=>inp(state.is2nd?'acos(':'cos(')},
+      {l:'tan', cls:'key-fn', a:()=>inp(state.is2nd?'atan(':'tan(')},
+      {l:'sinh', cls:'key-fn', a:()=>inp('sinh(')},
+      {l:'cosh', cls:'key-fn', a:()=>inp('cosh(')},
+    ],
+    [
+      {l:'log₁₀', cls:'key-fn', a:()=>inp('log10('), sub:'base 10'},
+      {l:'log₂',  cls:'key-fn', a:()=>inp('log2('),  sub:'base 2'},
+      {l:'ln',    cls:'key-fn', a:()=>inp('log(')},
+      {l:'eˣ',   cls:'key-fn', a:()=>inp('exp(')},
+      {l:'10ˣ',  cls:'key-fn', a:()=>inp('10^')},
+    ],
+    [
+      {l:'x²',  cls:'key-fn', a:()=>inp('^2')},
+      {l:'xʸ',  cls:'key-fn', a:()=>inp('^')},
+      {l:'√x',  cls:'key-fn', a:()=>inp('sqrt(')},
+      {l:'∛x',  cls:'key-fn', a:()=>inp('cbrt(')},
+      {l:'|x|', cls:'key-fn', a:()=>inp('abs(')},
+    ],
+    [
+      {l:'n!', cls:'key-fn', a:()=>inp('factorial(')},
+      {l:'nPr', cls:'key-fn', a:()=>inp('permutations(')},
+      {l:'nCr', cls:'key-fn', a:()=>inp('combinations(')},
+      {l:'π',  cls:'key-special', a:()=>inp('pi')},
+      {l:'e',  cls:'key-special', a:()=>inp('e')},
+    ],
+    [
+      {l:'7', cls:'key-num', a:()=>inp('7')},
+      {l:'8', cls:'key-num', a:()=>inp('8')},
+      {l:'9', cls:'key-num', a:()=>inp('9')},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
+      {l:'⌫', cls:'key-del', a:()=>delChar()},
+    ],
+    [
+      {l:'4', cls:'key-num', a:()=>inp('4')},
+      {l:'5', cls:'key-num', a:()=>inp('5')},
+      {l:'6', cls:'key-num', a:()=>inp('6')},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
+      {l:'AC', cls:'key-clear', a:()=>clearAll()},
+    ],
+    [
+      {l:'1', cls:'key-num', a:()=>inp('1')},
+      {l:'2', cls:'key-num', a:()=>inp('2')},
+      {l:'3', cls:'key-num', a:()=>inp('3')},
+      {l:'−', cls:'key-op',  a:()=>inp('-')},
+      {l:'ANS', cls:'key-special', a:()=>inpAns()},
+    ],
+    [
+      {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
+      {l:'.', cls:'key-num', a:()=>inp('.')},
+      {l:'=', cls:'key-eq',  a:()=>calculate()},
+      {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+  ],
+  prog: [
+    [
+      {l:'AND', cls:'key-fn', a:()=>inp(' & ')},
+      {l:'OR',  cls:'key-fn', a:()=>inp(' | ')},
+      {l:'XOR', cls:'key-fn', a:()=>inp(' xor ')},
+      {l:'NOT', cls:'key-fn', a:()=>inp('bitNot(')},
+      {l:'⌫',  cls:'key-del', a:()=>delChar()},
+    ],
+    [
+      {l:'<<', cls:'key-fn', a:()=>inp(' << ')},
+      {l:'>>', cls:'key-fn', a:()=>inp(' >> ')},
+      {l:'A',  cls:'key-fn', a:()=>inp('A')},
+      {l:'B',  cls:'key-fn', a:()=>inp('B')},
+      {l:'C',  cls:'key-fn', a:()=>inp('C')},
+    ],
+    [
+      {l:'D', cls:'key-fn', a:()=>inp('D')},
+      {l:'E', cls:'key-fn', a:()=>inp('E')},
+      {l:'F', cls:'key-fn', a:()=>inp('F')},
+      {l:'0x', cls:'key-special', a:()=>inp('0x'), sub:'hex'},
+      {l:'0b', cls:'key-special', a:()=>inp('0b'), sub:'bin'},
+    ],
+    [
+      {l:'7', cls:'key-num', a:()=>inp('7')},
+      {l:'8', cls:'key-num', a:()=>inp('8')},
+      {l:'9', cls:'key-num', a:()=>inp('9')},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
+      {l:'AC', cls:'key-clear', a:()=>clearAll()},
+    ],
+    [
+      {l:'4', cls:'key-num', a:()=>inp('4')},
+      {l:'5', cls:'key-num', a:()=>inp('5')},
+      {l:'6', cls:'key-num', a:()=>inp('6')},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
+      {l:'mod', cls:'key-fn', a:()=>inp(' mod ')},
+    ],
+    [
+      {l:'1', cls:'key-num', a:()=>inp('1')},
+      {l:'2', cls:'key-num', a:()=>inp('2')},
+      {l:'3', cls:'key-num', a:()=>inp('3')},
+      {l:'−', cls:'key-op',  a:()=>inp('-')},
+      {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+    [
+      {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
+      {l:'.', cls:'key-num', a:()=>inp('.')},
+      {l:'=', cls:'key-eq',  a:()=>calculate()},
+      {l:'()', cls:'key-op', a:()=>inp('()')},
+    ],
+  ],
+};
+
+function renderKeypad(mode) {
+  const kp = $d('keypad');
+  kp.innerHTML = '';
+  const rows = layouts[mode];
+  rows.forEach(row => {
+    const div = document.createElement('div');
+    div.className = 'key-row row-' + (row.some(k=>k.wide) ? 4 : 5);
+    row.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'key ' + (k.cls || 'key-num') + (k.wide?' key-wide':'');
+      btn.textContent = k.l;
+      if (k.sub) {
+        const sub = document.createElement('span');
+        sub.className = 'key-sub'; sub.textContent = k.sub;
+        btn.appendChild(sub);
+      }
+      btn.addEventListener('click', (e) => {
+        addRipple(btn, e);
+        btn.classList.add('key-pressed');
+        setTimeout(()=>btn.classList.remove('key-pressed'), 120);
+        k.a();
+      });
+      div.appendChild(btn);
+    });
+    kp.appendChild(div);
+  });
+
+  // mark 2nd key if active
+  const twoBtn = kp.querySelector('.key-2nd');
+  if (twoBtn && state.is2nd) twoBtn.classList.add('active-2nd');
+}
+
+function addRipple(btn, e) {
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left) + 'px';
+  r.style.top  = (e.clientY - rect.top)  + 'px';
+  btn.appendChild(r);
+  setTimeout(()=>r.remove(), 400);
+}
+
+/* ============================================================
+   CALCULATOR LOGIC
+   ============================================================ */
+function inp(v) {
+  state.expr += v;
+  updateDisplay(state.expr);
+  if (state.is2nd) { state.is2nd = false; renderKeypad(state.calcMode); }
+}
+
+function inpAns() {
+  if (state.lastResult !== null) {
+    state.expr += state.lastResult;
+    updateDisplay(state.expr);
+  } else {
+    toast('No previous result');
+  }
+}
+
+function delChar() {
+  state.expr = state.expr.slice(0,-1);
+  updateDisplay(state.expr);
+}
+
+function clearAll() {
+  state.expr = '';
+  updateDisplay('', '');
+  updateExpr('ready');
+}
+
+function toggle2nd() {
+  state.is2nd = !state.is2nd;
+  renderKeypad(state.calcMode);
+}
+
+/* --- CALCULATE --- */
+function calculate() {
+  if (!state.expr.trim()) return;
+
+  let raw = state.expr;
+  updateExpr(raw);
+
+  // Angle conversion wrapper for deg mode
+  let expr = raw;
+  if (state.angleMode === 'deg') {
+    expr = expr
+      .replace(/\bsin\(/g,  'sin(PI/180*')
+      .replace(/\bcos\(/g,  'cos(PI/180*')
+      .replace(/\btan\(/g,  'tan(PI/180*')
+      .replace(/\bsinh\(/g, 'sinh(PI/180*')
+      .replace(/\bcosh\(/g, 'cosh(PI/180*')
+      .replace(/\btanh\(/g, 'tanh(PI/180*')
+      // inverse: result in deg
+      .replace(/\basin\(/g, '(180/PI)*asin(')
+      .replace(/\bacos\(/g, '(180/PI)*acos(')
+      .replace(/\batan\(/g, '(180/PI)*atan(');
+  }
+
+  // normalize
+  expr = expr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-');
+
+  try {
+    const scope = { PI: Math.PI, E: Math.E };
+    let result = math.evaluate(expr, scope);
+    if (typeof result === 'object' && result.toNumber) result = result.toNumber();
+    result = parseFloat((+result).toPrecision(12));
+    if (!isFinite(result)) throw new Error('Infinity');
+
+    state.lastResult = result;
+    const formatted = formatNumber(result);
+    updateDisplay(formatted, 'result');
+    addToHistory(raw, formatted);
+    state.expr = formatted;
+  } catch {
+    updateDisplay('ERROR', 'error');
+    updateExpr(raw);
+    setTimeout(()=>{
+      state.expr = '';
+      updateDisplay('');
+    }, 1200);
+  }
+}
+
+function formatNumber(n) {
+  if (Number.isInteger(n) && Math.abs(n) < 1e15) return String(n);
+  if (Math.abs(n) < 1e-7 || Math.abs(n) > 1e12) return n.toExponential(6);
+  return parseFloat(n.toPrecision(10)).toString();
+}
+
+/* ============================================================
+   MEMORY
+   ============================================================ */
+function memClear()  { state.memory = null; $d('memIndicator').classList.remove('visible'); toast('Memory cleared'); }
+function memRecall() {
+  if (state.memory !== null) { inp(String(state.memory)); }
+  else toast('Memory empty');
+}
+function memAdd() {
+  const v = parseFloat(display.value);
+  if (!isNaN(v)) {
+    state.memory = (state.memory||0) + v;
+    $d('memIndicator').classList.add('visible');
+    toast('M+ = ' + state.memory);
+  }
+}
+function memSub() {
+  const v = parseFloat(display.value);
+  if (!isNaN(v)) {
+    state.memory = (state.memory||0) - v;
+    $d('memIndicator').classList.add('visible');
+    toast('M− = ' + state.memory);
+  }
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+function addToHistory(expr, result) {
+  const entry = { expr, result, time: new Date() };
+  state.history.unshift(entry);
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = $d('historyList');
+  if (!state.history.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;border:1px dashed var(--border);border-radius:12px">No calculations yet</div>';
+    return;
+  }
+  list.innerHTML = state.history.map((e,i) => `
+    <div class="history-item" onclick="recallHistory(${i})">
+      <div>
+        <div class="h-expr">${escHtml(e.expr)}</div>
+        <div class="h-time">${timeAgo(e.time)}</div>
+      </div>
+      <div class="h-result">${escHtml(e.result)}</div>
+    </div>
+  `).join('');
+}
+
+function recallHistory(i) {
+  const e = state.history[i];
+  state.expr = e.expr;
+  updateDisplay(state.expr);
+  switchTab('graph');  // stay on current, but switch back to calculator context
+}
+
+function clearHistory() {
+  state.history = [];
+  renderHistory();
+  toast('History cleared');
+}
+
+function timeAgo(d) {
+  const s = Math.floor((Date.now()-d)/1000);
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  return Math.floor(s/3600) + 'h ago';
+}
+
+function escHtml(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   CALC MODE SWITCH
+   ============================================================ */
+function switchCalcMode(mode) {
+  state.calcMode = mode;
+  state.is2nd = false;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active', ['std','sci','prog'][i]===mode);
+  });
+  const labels = {std:'STANDARD MODE', sci:'SCIENTIFIC MODE', prog:'PROGRAMMER MODE'};
+  $d('modeLabel').textContent = labels[mode];
+  renderKeypad(mode);
+}
+
+/* ============================================================
+   KEYBOARD SUPPORT
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.id !== 'display') return;
+  const map = {
+    'Enter': calculate, 'Backspace': delChar, 'Escape': clearAll,
+  };
+  if (map[e.key]) { e.preventDefault(); map[e.key](); return; }
+  const allowed = '0123456789+-*/.()%^';
+  if (allowed.includes(e.key)) { e.preventDefault(); inp(e.key); }
+});
+
+/* ============================================================
+   WORKSPACE TABS
+   ============================================================ */
+function switchTab(name) {
+  document.querySelectorAll('.ws-tab').forEach(t=>{
+    t.classList.toggle('active', t.id==='tab-'+name);
+  });
+  document.querySelectorAll('.ws-panel').forEach(p=>{
+    p.classList.toggle('active', p.id==='panel-'+name);
+  });
+  if (name === 'graph') setTimeout(drawGraph, 50);
+  if (name === 'history') renderHistory();
+}
+
+/* ============================================================
+   GRAPHING ENGINE
+   ============================================================ */
+const canvas = $d('graphCanvas');
+const ctx    = canvas.getContext('2d');
+const colorMap = { cyan:'#00f5ff', magenta:'#ff00aa', amber:'#ffaa00', green:'#00ff88' };
+
+function resizeCanvas() {
+  const c = $d('canvasContainer');
+  canvas.width  = c.clientWidth;
+  canvas.height = c.clientHeight || 450;
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+  state.plotColor = el.dataset.c;
+}
+
+function addPlotFn() {
+  const expr = $d('graphInput').value.trim();
+  if (!expr) { toast('Enter a function first'); return; }
+  state.plots.push({ expr, color: state.plotColor });
+  $d('graphInput').value = '';
+  renderFnTags();
+  drawGraph();
+  $d('canvasInfo').textContent = state.plots.length + ' FUNCTION' + (state.plots.length>1?'S':'') + ' PLOTTED';
+}
+
+function clearPlots() {
+  state.plots = [];
+  renderFnTags();
+  drawGraph();
+  $d('canvasInfo').textContent = 'NO FUNCTIONS PLOTTED';
+}
+
+function removePlot(i) {
+  state.plots.splice(i,1);
+  renderFnTags();
+  drawGraph();
+}
+
+function renderFnTags() {
+  $d('fnTagsList').innerHTML = state.plots.map((p,i) => `
+    <div class="graph-fn-tag">
+      <div class="graph-fn-dot" style="background:${colorMap[p.color]}"></div>
+      <span style="color:${colorMap[p.color]};font-size:12px">${escHtml(p.expr)}</span>
+      <span class="graph-fn-remove" onclick="removePlot(${i})">✕</span>
+    </div>
+  `).join('');
+}
+
+function drawGraph() {
+  resizeCanvas();
+  const W = canvas.width, H = canvas.height;
+  const sc = state.graphScale;
+  const ox = state.graphOffX, oy = state.graphOffY;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle = '#050508';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid
+  const originX = W/2 + ox;
+  const originY = H/2 + oy;
+
+  ctx.lineWidth = 1;
+  for (let x = (originX % sc); x < W; x += sc) {
+    ctx.strokeStyle = Math.abs(x - originX) < 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)';
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+  for (let y = (originY % sc); y < H; y += sc) {
+    ctx.strokeStyle = Math.abs(y - originY) < 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)';
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.font = '10px DM Mono, monospace';
+  ctx.textAlign = 'center';
+  for (let x = (originX % sc); x < W; x += sc) {
+    const val = Math.round((x - originX) / sc);
+    if (val !== 0) ctx.fillText(val, x, originY + 14);
+  }
+  ctx.textAlign = 'right';
+  for (let y = (originY % sc); y < H; y += sc) {
+    const val = Math.round((originY - y) / sc);
+    if (val !== 0) ctx.fillText(val, originX - 6, y + 4);
+  }
+
+  // Axes
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(W, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, H); ctx.stroke();
+
+  // Arrowheads
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.moveTo(W-6,originY-4); ctx.lineTo(W,originY); ctx.lineTo(W-6,originY+4); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(originX-4,6); ctx.lineTo(originX,0); ctx.lineTo(originX+4,6); ctx.fill();
+
+  const xMin = parseFloat($d('xMin').value) || -10;
+  const xMax = parseFloat($d('xMax').value) ||  10;
+
+  // Plot each function
+  state.plots.forEach(plot => {
+    const col = colorMap[plot.color] || '#00f5ff';
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = col; ctx.shadowBlur = 8;
+    ctx.beginPath();
+
+    let started = false;
+    const steps = W * 2;
+    for (let i = 0; i <= steps; i++) {
+      const xVal = xMin + (xMax - xMin) * i / steps;
+      const px   = originX + xVal * sc;
+      try {
+        let expr = plot.expr.replace(/\^/g,'**');
+        let yVal  = math.evaluate(expr, { x: xVal, PI: Math.PI, E: Math.E });
+        if (typeof yVal === 'object' && yVal.toNumber) yVal = yVal.toNumber();
+        const py = originY - yVal * sc;
+        if (!isFinite(py) || Math.abs(py) > H*5) { started = false; continue; }
+        if (!started) { ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+      } catch { started = false; }
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+}
+
+/* Graph mouse interaction */
+canvas.addEventListener('mousedown', e => {
+  state.isDragging = true;
+  state.dragStart = { x: e.clientX, y: e.clientY };
+  canvas.style.cursor = 'grabbing';
+});
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const xVal = ((mx - canvas.width/2 - state.graphOffX) / state.graphScale).toFixed(2);
+  const yVal = ((canvas.height/2 + state.graphOffY - my) / state.graphScale).toFixed(2);
+  $d('canvasCoords').textContent = `x: ${xVal}  y: ${yVal}`;
+
+  if (state.isDragging) {
+    state.graphOffX += e.clientX - state.dragStart.x;
+    state.graphOffY += e.clientY - state.dragStart.y;
+    state.dragStart = { x: e.clientX, y: e.clientY };
+    drawGraph();
+  }
+});
+canvas.addEventListener('mouseup', () => { state.isDragging=false; canvas.style.cursor='crosshair'; });
+canvas.addEventListener('mouseleave', () => { state.isDragging=false; canvas.style.cursor='crosshair'; });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  state.graphScale = Math.max(5, Math.min(200, state.graphScale * (e.deltaY<0?1.1:0.9)));
+  drawGraph();
+}, { passive: false });
+
+/* Touch pan */
+let lastTouch = null;
+canvas.addEventListener('touchstart', e=>{ lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY}; });
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const dx = e.touches[0].clientX - lastTouch.x;
+  const dy = e.touches[0].clientY - lastTouch.y;
+  state.graphOffX += dx; state.graphOffY += dy;
+  lastTouch = {x:e.touches[0].clientX,y:e.touches[0].clientY};
+  drawGraph();
+}, { passive:false });
+
+/* ============================================================
+   SOLVERS
+   ============================================================ */
+function solveLinear() {
+  const a = parseFloat($d('lA').value);
+  const b = parseFloat($d('lB').value);
+  const c = parseFloat($d('lC').value);
+  if (isNaN(a)||isNaN(b)||isNaN(c)) { $d('linearResult').textContent='Fill all fields'; return; }
+  if (a===0) { $d('linearResult').textContent = b===c ? 'Infinite solutions' : 'No solution'; return; }
+  const x = (c-b)/a;
+  $d('linearResult').textContent = `x = ${formatNumber(x)}`;
+}
+
+function solveQuadratic() {
+  const a = parseFloat($d('qA').value);
+  const b = parseFloat($d('qB').value);
+  const c = parseFloat($d('qC').value);
+  if (isNaN(a)||isNaN(b)||isNaN(c)) { $d('quadResult').textContent='Fill all fields'; return; }
+  if (a===0) { $d('quadResult').textContent='Not quadratic (a=0)'; return; }
+  const D = b*b - 4*a*c;
+  if (D > 0) {
+    const r1 = (-b+Math.sqrt(D))/(2*a), r2 = (-b-Math.sqrt(D))/(2*a);
+    $d('quadResult').innerHTML = `x₁ = ${formatNumber(r1)}<br>x₂ = ${formatNumber(r2)}`;
+  } else if (D===0) {
+    $d('quadResult').textContent = `x = ${formatNumber(-b/(2*a))}  (double root)`;
+  } else {
+    const re = -b/(2*a), im = Math.sqrt(-D)/(2*a);
+    $d('quadResult').innerHTML = `x₁ = ${formatNumber(re)} + ${formatNumber(im)}i<br>x₂ = ${formatNumber(re)} − ${formatNumber(im)}i`;
+  }
+}
+
+function solveSeries() {
+  const N = parseInt($d('seriesN').value);
+  if (isNaN(N)||N<1) { $d('seriesResult').textContent='Enter N ≥ 1'; return; }
+  const type = $d('seriesType').value;
+  let s;
+  if (type==='natural') s = N*(N+1)/2;
+  else if (type==='squares') s = N*(N+1)*(2*N+1)/6;
+  else s = Math.pow(N*(N+1)/2,2);
+  $d('seriesResult').textContent = `Sum = ${formatNumber(s)}`;
+}
+
+function solveTriangle() {
+  const a = parseFloat($d('triA').value);
+  const b = parseFloat($d('triB').value);
+  if (isNaN(a)||isNaN(b)) { $d('triResult').textContent='Enter sides a and b'; return; }
+  const c = Math.sqrt(a*a+b*b);
+  const angA = Math.asin(a/c)*180/Math.PI;
+  $d('triResult').innerHTML = `c = ${formatNumber(c)}<br>∠A = ${formatNumber(angA)}° | ∠B = ${formatNumber(90-angA)}°`;
+}
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const CONSTANTS = [
+  { sym:'π',   name:'Pi',                    val: Math.PI },
+  { sym:'e',   name:'Euler\'s Number',        val: Math.E },
+  { sym:'φ',   name:'Golden Ratio',           val: 1.6180339887 },
+  { sym:'c',   name:'Speed of Light (m/s)',   val: 299792458 },
+  { sym:'h',   name:'Planck (J·s)',           val: 6.62607015e-34 },
+  { sym:'G',   name:'Gravitational (N·m²/kg²)',val: 6.67430e-11 },
+  { sym:'kB',  name:'Boltzmann (J/K)',        val: 1.380649e-23 },
+  { sym:'NA',  name:'Avogadro (mol⁻¹)',       val: 6.02214076e23 },
+  { sym:'e⁻',  name:'Electron Charge (C)',    val: 1.602176634e-19 },
+  { sym:'me',  name:'Electron Mass (kg)',     val: 9.1093837015e-31 },
+  { sym:'mp',  name:'Proton Mass (kg)',       val: 1.67262192369e-27 },
+  { sym:'ε₀',  name:'Permittivity (F/m)',     val: 8.8541878128e-12 },
+  { sym:'μ₀',  name:'Permeability (H/m)',     val: 1.25663706212e-6 },
+  { sym:'R',   name:'Gas Constant (J/mol·K)', val: 8.314462618 },
+  { sym:'σ',   name:'Stefan-Boltzmann (W/m²K⁴)',val:5.670374419e-8 },
+  { sym:'√2',  name:'Square Root of 2',      val: Math.SQRT2 },
+  { sym:'ln2', name:'Natural Log of 2',       val: Math.LN2 },
+  { sym:'ln10',name:'Natural Log of 10',      val: Math.LN10 },
+];
+
+function renderConstants() {
+  $d('constantsGrid').innerHTML = CONSTANTS.map(c=>`
+    <div class="const-card" onclick="useConstant(${c.val})">
+      <div class="const-symbol">${c.sym}</div>
+      <div class="const-name">${c.name}</div>
+      <div class="const-value">${c.val.toString().length>16 ? c.val.toExponential(4) : c.val}</div>
+    </div>
+  `).join('');
+}
+
+function useConstant(v) {
+  inp(String(v));
+  switchTab('graph'); // visual feedback — switch back
+  toast('Constant inserted');
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+let toastTimer;
+function toast(msg) {
+  const el = $d('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2000);
+}
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+window.addEventListener('resize', () => {
+  if ($d('panel-graph').classList.contains('active')) drawGraph();
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderKeypad('std');
+renderConstants();
+setTimeout(() => {
+  // Draw a nice default graph
+  state.plots.push({ expr: 'sin(x)', color: 'cyan' });
+  state.plots.push({ expr: 'x^2/10', color: 'magenta' });
+  renderFnTags();
+  drawGraph();
+  $d('canvasInfo').textContent = '2 FUNCTIONS PLOTTED';
+}, 100);
+</script>
+
+</body>
+</html>
