@@ -223,6 +223,8 @@ body::before {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
+.display-row { display:flex; align-items:center; gap:10px; }
+
 .main-display {
   width: 100%; border: none; background: transparent;
   text-align: right; outline: none;
@@ -233,6 +235,23 @@ body::before {
 }
 .main-display.error { color: var(--red); }
 .main-display.result { color: var(--cyan); text-shadow: var(--glow-cyan); }
+
+.copy-btn {
+  flex-shrink:0; width:34px; height:34px; border-radius: 10px;
+  background: var(--raised); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 14px;
+  display:flex; align-items:center; justify-content:center;
+  transition: 0.2s;
+}
+.copy-btn:hover { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,245,255,0.2); }
+.copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+.live-preview {
+  text-align: right; font-size: 13px; color: var(--ghost);
+  font-family: var(--code); min-height: 16px; margin-top: 4px;
+  transition: color 0.15s;
+}
+.live-preview.visible { color: var(--muted); }
 
 .display-meta {
   display: flex; justify-content: space-between; align-items: center;
@@ -393,6 +412,7 @@ body::before {
   display: flex;
   border-bottom: 1px solid var(--border);
   background: var(--deep);
+  overflow-x: auto;
 }
 .ws-tab {
   padding: 16px 24px;
@@ -494,6 +514,18 @@ body::before {
   border-radius: 8px; border: 1px solid var(--border);
   backdrop-filter: blur(10px);
 }
+.canvas-zoom {
+  position: absolute; bottom: 14px; right: 14px;
+  display: flex; gap: 6px;
+}
+.zoom-btn {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(10,10,15,0.8); border: 1px solid var(--border);
+  color: var(--text); cursor: pointer; font-size: 14px;
+  backdrop-filter: blur(10px); transition: 0.2s;
+  display:flex; align-items:center; justify-content:center;
+}
+.zoom-btn:hover { border-color: var(--cyan); color: var(--cyan); }
 
 /* ===========================
    HISTORY PANEL
@@ -582,6 +614,38 @@ body::before {
 .const-value  { font-family: var(--code); font-size: 11px; color: var(--text); }
 
 /* ===========================
+   CONVERTER PANEL
+   =========================== */
+.converter-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+.conv-cat-btn {
+  padding: 8px 16px; border-radius: 20px; border:1px solid var(--border);
+  background: var(--raised); color: var(--muted); cursor:pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; transition: 0.2s;
+}
+.conv-cat-btn.active { color: var(--green); border-color: rgba(0,255,136,0.4); background: rgba(0,255,136,0.08); }
+.converter-body {
+  display:grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items:center;
+}
+.conv-col { display:flex; flex-direction:column; gap:8px; }
+.conv-swap {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--raised); border: 1px solid var(--border);
+  color: var(--green); cursor: pointer; font-size: 16px;
+  display:flex; align-items:center; justify-content:center; transition:0.2s;
+}
+.conv-swap:hover { box-shadow: 0 0 15px rgba(0,255,136,0.3); transform: rotate(180deg); }
+.conv-select, .conv-input {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 12px 14px; border-radius: var(--r-md);
+  font-family: var(--code); font-size: 14px; outline:none; width:100%;
+}
+.conv-select:focus, .conv-input:focus { border-color: var(--green); }
+.conv-result-big {
+  font-family: var(--code); font-size: 15px; color: var(--green);
+  padding: 4px 2px;
+}
+
+/* ===========================
    SECTION LABELS
    =========================== */
 .section-label {
@@ -618,6 +682,9 @@ body::before {
   .calc-panel { height: auto; position: static; order: 1; border-right: none; border-bottom: 1px solid var(--border); }
   .workspace { order: 2; }
   .solver-grid { grid-template-columns: 1fr; }
+  .converter-body { grid-template-columns: 1fr; }
+  .conv-swap { justify-self:center; transform: rotate(90deg); }
+  .conv-swap:hover { transform: rotate(270deg); }
 }
 
 @media(max-width: 600px) {
@@ -651,6 +718,15 @@ body::before {
   position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(0,245,255,0.05), transparent);
   animation: graph-scan 1s ease infinite;
+}
+
+/* FOCUS VISIBILITY FOR A11Y */
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--cyan); outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
 </style>
 </head>
@@ -698,7 +774,11 @@ body::before {
         </div>
       </div>
       <div class="expr-line" id="exprLine">ready</div>
-      <input type="text" class="main-display" id="display" readonly placeholder="0">
+      <div class="display-row">
+        <input type="text" class="main-display" id="display" readonly placeholder="0">
+        <button class="copy-btn" id="copyBtn" onclick="copyResult()" title="Copy result">⧉</button>
+      </div>
+      <div class="live-preview" id="livePreview"></div>
       <div class="display-meta">
         <div class="mem-indicator" id="memIndicator">MEM</div>
         <div class="char-count" id="charCount">0 CHARS</div>
@@ -726,6 +806,9 @@ body::before {
       <div class="ws-tab" onclick="switchTab('constants')" id="tab-constants">
         <span class="tab-icon">∴</span> CONSTANTS
       </div>
+      <div class="ws-tab" onclick="switchTab('converter')" id="tab-converter">
+        <span class="tab-icon">⇄</span> CONVERT
+      </div>
     </div>
 
     <!-- GRAPH -->
@@ -737,11 +820,11 @@ body::before {
         </div>
         <div class="input-group" style="max-width:80px">
           <div class="input-label">X Min</div>
-          <input type="number" class="range-input" id="xMin" value="-10">
+          <input type="number" class="range-input" id="xMin" value="-10" onchange="drawGraph()">
         </div>
         <div class="input-group" style="max-width:80px">
           <div class="input-label">X Max</div>
-          <input type="number" class="range-input" id="xMax" value="10">
+          <input type="number" class="range-input" id="xMax" value="10" onchange="drawGraph()">
         </div>
         <div>
           <div class="input-label" style="margin-bottom:6px">Color</div>
@@ -762,6 +845,11 @@ body::before {
         <canvas id="graphCanvas"></canvas>
         <div class="canvas-coords" id="canvasCoords">x: 0.00 y: 0.00</div>
         <div class="canvas-info" id="canvasInfo">NO FUNCTIONS PLOTTED</div>
+        <div class="canvas-zoom">
+          <button class="zoom-btn" onclick="zoomGraph(1.25)" title="Zoom in">+</button>
+          <button class="zoom-btn" onclick="zoomGraph(0.8)" title="Zoom out">−</button>
+          <button class="zoom-btn" onclick="resetGraphView()" title="Reset view">⟲</button>
+        </div>
       </div>
     </div>
 
@@ -823,6 +911,24 @@ body::before {
           <div class="solver-result" id="triResult">—</div>
         </div>
 
+        <div class="solver-card">
+          <div class="solver-title"><span class="solver-icon">%</span> Percentage</div>
+          <div class="input-label" style="margin-bottom:6px">What is X% of Y?</div>
+          <input class="solver-input" id="pctX" placeholder="X (percent)" type="number">
+          <input class="solver-input" id="pctY" placeholder="Y (value)" type="number">
+          <button class="solver-btn" onclick="solvePercentage()">CALCULATE</button>
+          <div class="solver-result" id="pctResult">—</div>
+        </div>
+
+        <div class="solver-card">
+          <div class="solver-title"><span class="solver-icon">GCF</span> GCD / LCM</div>
+          <div class="input-label" style="margin-bottom:6px">Two positive integers</div>
+          <input class="solver-input" id="gcdA" placeholder="First number" type="number">
+          <input class="solver-input" id="gcdB" placeholder="Second number" type="number">
+          <button class="solver-btn" onclick="solveGcdLcm()">COMPUTE</button>
+          <div class="solver-result" id="gcdResult">—</div>
+        </div>
+
       </div>
     </div>
 
@@ -830,6 +936,26 @@ body::before {
     <div class="ws-panel" id="panel-constants">
       <div class="section-label">Physical Constants</div>
       <div class="constants-grid" id="constantsGrid"></div>
+    </div>
+
+    <!-- CONVERTER -->
+    <div class="ws-panel" id="panel-converter">
+      <div class="section-label">Unit Converter</div>
+      <div class="converter-tabs" id="converterTabs"></div>
+      <div class="converter-body">
+        <div class="conv-col">
+          <div class="input-label">From</div>
+          <select class="conv-select" id="convFromUnit"></select>
+          <input class="conv-input" id="convFromVal" type="number" value="1" oninput="runConversion('from')">
+        </div>
+        <button class="conv-swap" onclick="swapConversion()" title="Swap units">⇄</button>
+        <div class="conv-col">
+          <div class="input-label">To</div>
+          <select class="conv-select" id="convToUnit"></select>
+          <input class="conv-input" id="convToVal" type="number" value="" oninput="runConversion('to')">
+        </div>
+      </div>
+      <div class="conv-result-big" id="convSummary"></div>
     </div>
 
   </div>
@@ -870,10 +996,27 @@ function updateDisplay(v, cls='') {
   display.value = v;
   display.className = 'main-display' + (cls ? ' '+cls : '');
   $d('charCount').textContent = v.length + ' CHARS';
+  updateLivePreview();
 }
 
 function updateExpr(t) {
   $d('exprLine').textContent = t || 'ready';
+}
+
+/* ---- Live preview: evaluate expression as the user types, without committing ---- */
+function updateLivePreview() {
+  const el = $d('livePreview');
+  const raw = state.expr;
+  if (!raw || !/[0-9]/.test(raw)) { el.textContent = ''; el.classList.remove('visible'); return; }
+  // Don't preview if expression clearly ends mid-operator/open-paren in a way math.js can't partially close safely
+  try {
+    const val = evaluateExpression(raw, { silent: true });
+    if (val === null) { el.textContent = ''; el.classList.remove('visible'); return; }
+    el.textContent = '= ' + formatNumber(val);
+    el.classList.add('visible');
+  } catch {
+    el.textContent = ''; el.classList.remove('visible');
+  }
 }
 
 /* ============================================================
@@ -896,6 +1039,7 @@ function setAngle(mode) {
   $d('btnDeg').classList.toggle('active', mode==='deg');
   $d('btnRad').classList.toggle('active', mode==='rad');
   toast('Angle mode: ' + mode.toUpperCase());
+  updateLivePreview();
 }
 
 /* ============================================================
@@ -933,7 +1077,7 @@ const layouts = {
       {l:')',   cls:'key-op', a:()=>inp(')')},
       {l:'π',   cls:'key-special', a:()=>inp('pi')},
       {l:'e',   cls:'key-special', a:()=>inp('e')},
-      {l:'%',   cls:'key-op', a:()=>inp('%')},
+      {l:'%',   cls:'key-op', a:()=>inp('/100')},
     ],
     // row 5
     [
@@ -1119,8 +1263,10 @@ function addRipple(btn, e) {
   const r = document.createElement('div');
   r.className = 'ripple';
   const rect = btn.getBoundingClientRect();
-  r.style.left = (e.clientX - rect.left) + 'px';
-  r.style.top  = (e.clientY - rect.top)  + 'px';
+  const cx = e.clientX !== undefined ? e.clientX : rect.left + rect.width/2;
+  const cy = e.clientY !== undefined ? e.clientY : rect.top + rect.height/2;
+  r.style.left = (cx - rect.left) + 'px';
+  r.style.top  = (cy - rect.top)  + 'px';
   btn.appendChild(r);
   setTimeout(()=>r.remove(), 400);
 }
@@ -1159,15 +1305,11 @@ function toggle2nd() {
   renderKeypad(state.calcMode);
 }
 
-/* --- CALCULATE --- */
-function calculate() {
-  if (!state.expr.trim()) return;
-
-  let raw = state.expr;
-  updateExpr(raw);
-
-  // Angle conversion wrapper for deg mode
+/* --- Shared expression evaluator (used by calculate() and live preview) --- */
+function evaluateExpression(raw, opts = {}) {
+  if (!raw || !raw.trim()) return null;
   let expr = raw;
+
   if (state.angleMode === 'deg') {
     expr = expr
       .replace(/\bsin\(/g,  'sin(PI/180*')
@@ -1176,22 +1318,35 @@ function calculate() {
       .replace(/\bsinh\(/g, 'sinh(PI/180*')
       .replace(/\bcosh\(/g, 'cosh(PI/180*')
       .replace(/\btanh\(/g, 'tanh(PI/180*')
-      // inverse: result in deg
       .replace(/\basin\(/g, '(180/PI)*asin(')
       .replace(/\bacos\(/g, '(180/PI)*acos(')
       .replace(/\batan\(/g, '(180/PI)*atan(');
   }
 
-  // normalize
   expr = expr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-');
 
-  try {
-    const scope = { PI: Math.PI, E: Math.E };
-    let result = math.evaluate(expr, scope);
-    if (typeof result === 'object' && result.toNumber) result = result.toNumber();
-    result = parseFloat((+result).toPrecision(12));
-    if (!isFinite(result)) throw new Error('Infinity');
+  const scope = { PI: Math.PI, E: Math.E };
+  let result = math.evaluate(expr, scope);
+  if (result === undefined) return null;
+  if (typeof result === 'object' && result.toNumber) result = result.toNumber();
+  if (typeof result !== 'number') return null;
+  result = parseFloat((+result).toPrecision(12));
+  if (!isFinite(result)) {
+    if (opts.silent) return null;
+    throw new Error('Infinity');
+  }
+  return result;
+}
 
+/* --- CALCULATE --- */
+function calculate() {
+  if (!state.expr.trim()) return;
+
+  let raw = state.expr;
+  updateExpr(raw);
+
+  try {
+    const result = evaluateExpression(raw);
     state.lastResult = result;
     const formatted = formatNumber(result);
     updateDisplay(formatted, 'result');
@@ -1211,6 +1366,32 @@ function formatNumber(n) {
   if (Number.isInteger(n) && Math.abs(n) < 1e15) return String(n);
   if (Math.abs(n) < 1e-7 || Math.abs(n) > 1e12) return n.toExponential(6);
   return parseFloat(n.toPrecision(10)).toString();
+}
+
+/* ============================================================
+   COPY RESULT
+   ============================================================ */
+function copyResult() {
+  const val = display.value;
+  if (!val) { toast('Nothing to copy'); return; }
+  const btn = $d('copyBtn');
+  const done = () => {
+    btn.textContent = '✓'; btn.classList.add('copied');
+    toast('Copied to clipboard');
+    setTimeout(()=>{ btn.textContent = '⧉'; btn.classList.remove('copied'); }, 1200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val).then(done).catch(()=>fallbackCopy(val, done));
+  } else {
+    fallbackCopy(val, done);
+  }
+}
+function fallbackCopy(val, done) {
+  const ta = document.createElement('textarea');
+  ta.value = val; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch { toast('Copy failed'); }
+  document.body.removeChild(ta);
 }
 
 /* ============================================================
@@ -1244,6 +1425,7 @@ function memSub() {
 function addToHistory(expr, result) {
   const entry = { expr, result, time: new Date() };
   state.history.unshift(entry);
+  if (state.history.length > 100) state.history.pop();
   renderHistory();
 }
 
@@ -1266,9 +1448,9 @@ function renderHistory() {
 
 function recallHistory(i) {
   const e = state.history[i];
-  state.expr = e.expr;
+  state.expr = e.result;
   updateDisplay(state.expr);
-  switchTab('graph');  // stay on current, but switch back to calculator context
+  toast('Recalled from history');
 }
 
 function clearHistory() {
@@ -1338,8 +1520,14 @@ const colorMap = { cyan:'#00f5ff', magenta:'#ff00aa', amber:'#ffaa00', green:'#0
 
 function resizeCanvas() {
   const c = $d('canvasContainer');
-  canvas.width  = c.clientWidth;
-  canvas.height = c.clientHeight || 450;
+  const dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight || 450;
+  canvas.width  = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { W: w, H: h };
 }
 
 function selectColor(el) {
@@ -1369,6 +1557,7 @@ function removePlot(i) {
   state.plots.splice(i,1);
   renderFnTags();
   drawGraph();
+  $d('canvasInfo').textContent = state.plots.length ? (state.plots.length + ' FUNCTION' + (state.plots.length>1?'S':'') + ' PLOTTED') : 'NO FUNCTIONS PLOTTED';
 }
 
 function renderFnTags() {
@@ -1381,9 +1570,19 @@ function renderFnTags() {
   `).join('');
 }
 
+function zoomGraph(factor) {
+  state.graphScale = Math.max(5, Math.min(400, state.graphScale * factor));
+  drawGraph();
+}
+
+function resetGraphView() {
+  state.graphScale = 25; state.graphOffX = 0; state.graphOffY = 0;
+  drawGraph();
+  toast('View reset');
+}
+
 function drawGraph() {
-  resizeCanvas();
-  const W = canvas.width, H = canvas.height;
+  const { W, H } = resizeCanvas();
   const sc = state.graphScale;
   const ox = state.graphOffX, oy = state.graphOffY;
 
@@ -1432,8 +1631,10 @@ function drawGraph() {
   ctx.beginPath(); ctx.moveTo(W-6,originY-4); ctx.lineTo(W,originY); ctx.lineTo(W-6,originY+4); ctx.fill();
   ctx.beginPath(); ctx.moveTo(originX-4,6); ctx.lineTo(originX,0); ctx.lineTo(originX+4,6); ctx.fill();
 
-  const xMin = parseFloat($d('xMin').value) || -10;
-  const xMax = parseFloat($d('xMax').value) ||  10;
+  const xMin = parseFloat($d('xMin').value);
+  const xMax = parseFloat($d('xMax').value);
+  const rangeMin = isFinite(xMin) ? xMin : -10;
+  const rangeMax = isFinite(xMax) && xMax > rangeMin ? xMax : rangeMin + 20;
 
   // Plot each function
   state.plots.forEach(plot => {
@@ -1444,18 +1645,23 @@ function drawGraph() {
     ctx.beginPath();
 
     let started = false;
-    const steps = W * 2;
+    let prevPy = null;
+    const steps = Math.max(200, W * 2);
     for (let i = 0; i <= steps; i++) {
-      const xVal = xMin + (xMax - xMin) * i / steps;
+      const xVal = rangeMin + (rangeMax - rangeMin) * i / steps;
       const px   = originX + xVal * sc;
       try {
         let expr = plot.expr.replace(/\^/g,'**');
         let yVal  = math.evaluate(expr, { x: xVal, PI: Math.PI, E: Math.E });
         if (typeof yVal === 'object' && yVal.toNumber) yVal = yVal.toNumber();
         const py = originY - yVal * sc;
-        if (!isFinite(py) || Math.abs(py) > H*5) { started = false; continue; }
+        // Break the line across discontinuities/asymptotes instead of drawing a vertical spike
+        if (!isFinite(py) || (prevPy !== null && Math.abs(py - prevPy) > H)) {
+          started = false; prevPy = null; continue;
+        }
         if (!started) { ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
-      } catch { started = false; }
+        prevPy = py;
+      } catch { started = false; prevPy = null; }
     }
     ctx.stroke();
     ctx.shadowBlur = 0;
@@ -1472,8 +1678,8 @@ canvas.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
-  const xVal = ((mx - canvas.width/2 - state.graphOffX) / state.graphScale).toFixed(2);
-  const yVal = ((canvas.height/2 + state.graphOffY - my) / state.graphScale).toFixed(2);
+  const xVal = ((mx - rect.width/2 - state.graphOffX) / state.graphScale).toFixed(2);
+  const yVal = ((rect.height/2 + state.graphOffY - my) / state.graphScale).toFixed(2);
   $d('canvasCoords').textContent = `x: ${xVal}  y: ${yVal}`;
 
   if (state.isDragging) {
@@ -1487,7 +1693,7 @@ canvas.addEventListener('mouseup', () => { state.isDragging=false; canvas.style.
 canvas.addEventListener('mouseleave', () => { state.isDragging=false; canvas.style.cursor='crosshair'; });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
-  state.graphScale = Math.max(5, Math.min(200, state.graphScale * (e.deltaY<0?1.1:0.9)));
+  state.graphScale = Math.max(5, Math.min(400, state.graphScale * (e.deltaY<0?1.1:0.9)));
   drawGraph();
 }, { passive: false });
 
@@ -1554,6 +1760,24 @@ function solveTriangle() {
   $d('triResult').innerHTML = `c = ${formatNumber(c)}<br>∠A = ${formatNumber(angA)}° | ∠B = ${formatNumber(90-angA)}°`;
 }
 
+function solvePercentage() {
+  const x = parseFloat($d('pctX').value);
+  const y = parseFloat($d('pctY').value);
+  if (isNaN(x)||isNaN(y)) { $d('pctResult').textContent='Fill both fields'; return; }
+  const result = (x/100)*y;
+  $d('pctResult').innerHTML = `${formatNumber(x)}% of ${formatNumber(y)} = <b>${formatNumber(result)}</b>`;
+}
+
+function solveGcdLcm() {
+  const a = Math.round(parseFloat($d('gcdA').value));
+  const b = Math.round(parseFloat($d('gcdB').value));
+  if (isNaN(a)||isNaN(b)||a<1||b<1) { $d('gcdResult').textContent='Enter two positive integers'; return; }
+  const gcd = (x,y) => y===0 ? x : gcd(y, x%y);
+  const g = gcd(a,b);
+  const l = (a*b)/g;
+  $d('gcdResult').innerHTML = `GCD = ${g}<br>LCM = ${formatNumber(l)}`;
+}
+
 /* ============================================================
    CONSTANTS
    ============================================================ */
@@ -1590,9 +1814,127 @@ function renderConstants() {
 
 function useConstant(v) {
   inp(String(v));
-  switchTab('graph'); // visual feedback — switch back
-  toast('Constant inserted');
+  toast('Constant inserted into expression');
 }
+
+/* ============================================================
+   UNIT CONVERTER
+   ============================================================ */
+// Each category stores factors relative to a base unit, except temperature which needs formulas.
+const CONV_DATA = {
+  length: {
+    label: 'Length',
+    base: 'm',
+    units: { mm:0.001, cm:0.01, m:1, km:1000, in:0.0254, ft:0.3048, yd:0.9144, mi:1609.344 },
+  },
+  mass: {
+    label: 'Mass',
+    base: 'kg',
+    units: { mg:0.000001, g:0.001, kg:1, t:1000, oz:0.0283495, lb:0.453592, st:6.35029 },
+  },
+  temperature: {
+    label: 'Temperature',
+    special: true,
+    units: { C:'C', F:'F', K:'K' },
+  },
+  area: {
+    label: 'Area',
+    base: 'm2',
+    units: { 'mm²':0.000001, 'cm²':0.0001, 'm²':1, 'km²':1000000, acre:4046.86, hectare:10000, 'ft²':0.092903, 'in²':0.00064516 },
+  },
+  volume: {
+    label: 'Volume',
+    base: 'l',
+    units: { ml:0.001, l:1, 'm³':1000, gal:3.78541, qt:0.946353, pt:0.473176, cup:0.24, floz:0.0295735 },
+  },
+  speed: {
+    label: 'Speed',
+    base: 'mps',
+    units: { 'm/s':1, 'km/h':0.277778, mph:0.44704, knot:0.514444, 'ft/s':0.3048 },
+  },
+  time: {
+    label: 'Time',
+    base: 's',
+    units: { ms:0.001, s:1, min:60, hr:3600, day:86400, week:604800, year:31557600 },
+  },
+  data: {
+    label: 'Data',
+    base: 'byte',
+    units: { bit:0.125, byte:1, KB:1024, MB:1048576, GB:1073741824, TB:1099511627776 },
+  },
+};
+
+let convCategory = 'length';
+
+function renderConverterTabs() {
+  $d('converterTabs').innerHTML = Object.entries(CONV_DATA).map(([key,c]) => `
+    <button class="conv-cat-btn ${key===convCategory?'active':''}" onclick="setConvCategory('${key}')">${c.label}</button>
+  `).join('');
+}
+
+function setConvCategory(cat) {
+  convCategory = cat;
+  renderConverterTabs();
+  populateConvUnits();
+  runConversion('from');
+}
+
+function populateConvUnits() {
+  const c = CONV_DATA[convCategory];
+  const units = Object.keys(c.units);
+  const fromSel = $d('convFromUnit'), toSel = $d('convToUnit');
+  fromSel.innerHTML = units.map(u=>`<option value="${u}">${u}</option>`).join('');
+  toSel.innerHTML   = units.map(u=>`<option value="${u}">${u}</option>`).join('');
+  fromSel.value = units[0];
+  toSel.value = units.length > 1 ? units[1] : units[0];
+}
+
+function convertTemp(val, from, to) {
+  let celsius;
+  if (from==='C') celsius = val;
+  else if (from==='F') celsius = (val-32)*5/9;
+  else celsius = val - 273.15;
+  if (to==='C') return celsius;
+  if (to==='F') return celsius*9/5+32;
+  return celsius + 273.15;
+}
+
+function runConversion(source) {
+  const c = CONV_DATA[convCategory];
+  const fromUnit = $d('convFromUnit').value;
+  const toUnit = $d('convToUnit').value;
+  const fromInput = $d('convFromVal');
+  const toInput = $d('convToVal');
+
+  if (source === 'from') {
+    const v = parseFloat(fromInput.value);
+    if (isNaN(v)) { toInput.value = ''; $d('convSummary').textContent=''; return; }
+    let result;
+    if (c.special) result = convertTemp(v, fromUnit, toUnit);
+    else result = v * c.units[fromUnit] / c.units[toUnit];
+    toInput.value = formatNumber(result);
+    $d('convSummary').textContent = `${formatNumber(v)} ${fromUnit} = ${formatNumber(result)} ${toUnit}`;
+  } else {
+    const v = parseFloat(toInput.value);
+    if (isNaN(v)) { fromInput.value = ''; $d('convSummary').textContent=''; return; }
+    let result;
+    if (c.special) result = convertTemp(v, toUnit, fromUnit);
+    else result = v * c.units[toUnit] / c.units[fromUnit];
+    fromInput.value = formatNumber(result);
+    $d('convSummary').textContent = `${formatNumber(v)} ${toUnit} = ${formatNumber(result)} ${fromUnit}`;
+  }
+}
+
+function swapConversion() {
+  const fromSel = $d('convFromUnit'), toSel = $d('convToUnit');
+  const tmp = fromSel.value;
+  fromSel.value = toSel.value;
+  toSel.value = tmp;
+  runConversion('from');
+}
+
+$d('convFromUnit').addEventListener('change', ()=>runConversion('from'));
+$d('convToUnit').addEventListener('change', ()=>runConversion('from'));
 
 /* ============================================================
    TOAST
@@ -1618,6 +1960,9 @@ window.addEventListener('resize', () => {
    ============================================================ */
 renderKeypad('std');
 renderConstants();
+renderConverterTabs();
+populateConvUnits();
+runConversion('from');
 setTimeout(() => {
   // Draw a nice default graph
   state.plots.push({ expr: 'sin(x)', color: 'cyan' });
