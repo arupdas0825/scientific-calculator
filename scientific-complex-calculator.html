@@ -391,6 +391,8 @@ body::before {
 }
 
 .key-wide { grid-column: span 2; }
+.key-wide-full { grid-column: span 5; }
+.key-spacer { visibility: hidden; pointer-events: none; }
 
 /* KEY LABEL */
 .key-sub {
@@ -1103,10 +1105,11 @@ const layouts = {
       {l:'ANS', cls:'key-special', a:()=>inpAns(), sub:'last'},
       {l:'−', cls:'key-op',  a:()=>inp('-')},
     ],
-    // row 8
+    // row 8 — 0 spans cols 1-2, '.' col 3, spacer col 4 to keep '+' aligned with the operator column (col 5)
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
+      {spacer:true},
       {l:'+', cls:'key-op',  a:()=>inp('+')},
     ],
     // row 9 — big equals bar
@@ -1174,6 +1177,7 @@ const layouts = {
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
+      {spacer:true},
       {l:'+', cls:'key-op',  a:()=>inp('+')},
     ],
     [
@@ -1226,6 +1230,7 @@ const layouts = {
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
+      {spacer:true},
       {l:'+', cls:'key-op',  a:()=>inp('+')},
     ],
     [
@@ -1245,6 +1250,12 @@ function renderKeypad(mode) {
     // (the big "=" bar). This keeps +, -, x, / always aligned in one column.
     div.className = 'key-row row-5';
     row.forEach(k => {
+      if (k.spacer) {
+        const spacerEl = document.createElement('div');
+        spacerEl.className = 'key key-spacer';
+        div.appendChild(spacerEl);
+        return;
+      }
       const btn = document.createElement('button');
       const wideClass = k.wide === 'full' ? ' key-wide-full' : (k.wide ? ' key-wide' : '');
       btn.className = 'key ' + (k.cls || 'key-num') + wideClass;
@@ -1326,9 +1337,6 @@ function evaluateExpression(raw, opts = {}) {
       .replace(/\bsin\(/g,  'sin(PI/180*')
       .replace(/\bcos\(/g,  'cos(PI/180*')
       .replace(/\btan\(/g,  'tan(PI/180*')
-      .replace(/\bsinh\(/g, 'sinh(PI/180*')
-      .replace(/\bcosh\(/g, 'cosh(PI/180*')
-      .replace(/\btanh\(/g, 'tanh(PI/180*')
       .replace(/\basin\(/g, '(180/PI)*asin(')
       .replace(/\bacos\(/g, '(180/PI)*acos(')
       .replace(/\batan\(/g, '(180/PI)*atan(');
@@ -1555,7 +1563,7 @@ function addPlotFn() {
   try {
     const testVal = math.evaluate(expr, { x: 1, PI: Math.PI, E: Math.E });
     if (typeof testVal !== 'number' && !(testVal && testVal.toNumber)) {
-      toast('That doesn\\'t look like a function of x');
+      toast("That doesn't look like a function of x");
       return;
     }
   } catch (err) {
