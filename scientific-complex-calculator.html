@@ -1079,36 +1079,39 @@ const layouts = {
       {l:'e',   cls:'key-special', a:()=>inp('e')},
       {l:'%',   cls:'key-op', a:()=>inp('/100')},
     ],
-    // row 5
+    // row 5 — operators live in column 5, top to bottom: ÷ × − +
     [
       {l:'7', cls:'key-num', a:()=>inp('7')},
       {l:'8', cls:'key-num', a:()=>inp('8')},
       {l:'9', cls:'key-num', a:()=>inp('9')},
-      {l:'÷', cls:'key-op',  a:()=>inp('/')},
       {l:'⌫', cls:'key-del', a:()=>delChar()},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
     ],
     // row 6
     [
       {l:'4', cls:'key-num', a:()=>inp('4')},
       {l:'5', cls:'key-num', a:()=>inp('5')},
       {l:'6', cls:'key-num', a:()=>inp('6')},
-      {l:'×', cls:'key-op',  a:()=>inp('*')},
       {l:'AC', cls:'key-clear', a:()=>clearAll()},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
     ],
     // row 7
     [
       {l:'1', cls:'key-num', a:()=>inp('1')},
       {l:'2', cls:'key-num', a:()=>inp('2')},
       {l:'3', cls:'key-num', a:()=>inp('3')},
-      {l:'−', cls:'key-op',  a:()=>inp('-')},
       {l:'ANS', cls:'key-special', a:()=>inpAns(), sub:'last'},
+      {l:'−', cls:'key-op',  a:()=>inp('-')},
     ],
     // row 8
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
-      {l:'=', cls:'key-eq',  a:()=>calculate()},
       {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+    // row 9 — big equals bar
+    [
+      {l:'=', cls:'key-eq', a:()=>calculate(), wide:'full'},
     ],
   ],
   sci: [
@@ -1151,28 +1154,30 @@ const layouts = {
       {l:'7', cls:'key-num', a:()=>inp('7')},
       {l:'8', cls:'key-num', a:()=>inp('8')},
       {l:'9', cls:'key-num', a:()=>inp('9')},
-      {l:'÷', cls:'key-op',  a:()=>inp('/')},
       {l:'⌫', cls:'key-del', a:()=>delChar()},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
     ],
     [
       {l:'4', cls:'key-num', a:()=>inp('4')},
       {l:'5', cls:'key-num', a:()=>inp('5')},
       {l:'6', cls:'key-num', a:()=>inp('6')},
-      {l:'×', cls:'key-op',  a:()=>inp('*')},
       {l:'AC', cls:'key-clear', a:()=>clearAll()},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
     ],
     [
       {l:'1', cls:'key-num', a:()=>inp('1')},
       {l:'2', cls:'key-num', a:()=>inp('2')},
       {l:'3', cls:'key-num', a:()=>inp('3')},
-      {l:'−', cls:'key-op',  a:()=>inp('-')},
       {l:'ANS', cls:'key-special', a:()=>inpAns()},
+      {l:'−', cls:'key-op',  a:()=>inp('-')},
     ],
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
-      {l:'=', cls:'key-eq',  a:()=>calculate()},
       {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+    [
+      {l:'=', cls:'key-eq', a:()=>calculate(), wide:'full'},
     ],
   ],
   prog: [
@@ -1201,28 +1206,30 @@ const layouts = {
       {l:'7', cls:'key-num', a:()=>inp('7')},
       {l:'8', cls:'key-num', a:()=>inp('8')},
       {l:'9', cls:'key-num', a:()=>inp('9')},
-      {l:'÷', cls:'key-op',  a:()=>inp('/')},
       {l:'AC', cls:'key-clear', a:()=>clearAll()},
+      {l:'÷', cls:'key-op',  a:()=>inp('/')},
     ],
     [
       {l:'4', cls:'key-num', a:()=>inp('4')},
       {l:'5', cls:'key-num', a:()=>inp('5')},
       {l:'6', cls:'key-num', a:()=>inp('6')},
-      {l:'×', cls:'key-op',  a:()=>inp('*')},
       {l:'mod', cls:'key-fn', a:()=>inp(' mod ')},
+      {l:'×', cls:'key-op',  a:()=>inp('*')},
     ],
     [
       {l:'1', cls:'key-num', a:()=>inp('1')},
       {l:'2', cls:'key-num', a:()=>inp('2')},
       {l:'3', cls:'key-num', a:()=>inp('3')},
+      {l:'()', cls:'key-op', a:()=>inp('()')},
       {l:'−', cls:'key-op',  a:()=>inp('-')},
-      {l:'+', cls:'key-op',  a:()=>inp('+')},
     ],
     [
       {l:'0', cls:'key-num', a:()=>inp('0'), wide:true},
       {l:'.', cls:'key-num', a:()=>inp('.')},
-      {l:'=', cls:'key-eq',  a:()=>calculate()},
-      {l:'()', cls:'key-op', a:()=>inp('()')},
+      {l:'+', cls:'key-op',  a:()=>inp('+')},
+    ],
+    [
+      {l:'=', cls:'key-eq', a:()=>calculate(), wide:'full'},
     ],
   ],
 };
@@ -1233,10 +1240,14 @@ function renderKeypad(mode) {
   const rows = layouts[mode];
   rows.forEach(row => {
     const div = document.createElement('div');
-    div.className = 'key-row row-' + (row.some(k=>k.wide) ? 4 : 5);
+    // A row is always 5 equal columns. Keys marked wide:true span 2 of those
+    // columns (e.g. the big "0"); keys marked wide:'full' span the entire row
+    // (the big "=" bar). This keeps +, -, x, / always aligned in one column.
+    div.className = 'key-row row-5';
     row.forEach(k => {
       const btn = document.createElement('button');
-      btn.className = 'key ' + (k.cls || 'key-num') + (k.wide?' key-wide':'');
+      const wideClass = k.wide === 'full' ? ' key-wide-full' : (k.wide ? ' key-wide' : '');
+      btn.className = 'key ' + (k.cls || 'key-num') + wideClass;
       btn.textContent = k.l;
       if (k.sub) {
         const sub = document.createElement('span');
@@ -1539,6 +1550,18 @@ function selectColor(el) {
 function addPlotFn() {
   const expr = $d('graphInput').value.trim();
   if (!expr) { toast('Enter a function first'); return; }
+  // Sanity-check the function actually evaluates before adding it, so
+  // a typo doesn't silently produce an empty plot with no feedback.
+  try {
+    const testVal = math.evaluate(expr, { x: 1, PI: Math.PI, E: Math.E });
+    if (typeof testVal !== 'number' && !(testVal && testVal.toNumber)) {
+      toast('That doesn\\'t look like a function of x');
+      return;
+    }
+  } catch (err) {
+    toast('Could not parse function: ' + err.message);
+    return;
+  }
   state.plots.push({ expr, color: state.plotColor });
   $d('graphInput').value = '';
   renderFnTags();
@@ -1647,12 +1670,13 @@ function drawGraph() {
     let started = false;
     let prevPy = null;
     const steps = Math.max(200, W * 2);
+    // NOTE: mathjs uses '^' (not '**') for exponentiation, and it is already
+    // supported natively, so the expression is evaluated as-is here.
     for (let i = 0; i <= steps; i++) {
       const xVal = rangeMin + (rangeMax - rangeMin) * i / steps;
       const px   = originX + xVal * sc;
       try {
-        let expr = plot.expr.replace(/\^/g,'**');
-        let yVal  = math.evaluate(expr, { x: xVal, PI: Math.PI, E: Math.E });
+        let yVal  = math.evaluate(plot.expr, { x: xVal, PI: Math.PI, E: Math.E });
         if (typeof yVal === 'object' && yVal.toNumber) yVal = yVal.toNumber();
         const py = originY - yVal * sc;
         // Break the line across discontinuities/asymptotes instead of drawing a vertical spike
