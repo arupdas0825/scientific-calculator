@@ -63,7 +63,7 @@ body {
   overflow-x: hidden;
 }
 
-
+/* ---- NOISE OVERLAY ---- */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -656,6 +656,137 @@ body::before {
 }
 
 /* ===========================
+   GRAPH MODE — header toggle + fullscreen overlay
+   =========================== */
+.graph-mode-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(157,78,221,0.12));
+  border: 1px solid rgba(0,245,255,0.3);
+  color: var(--cyan); cursor: pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  transition: 0.2s;
+}
+.graph-mode-btn:hover { box-shadow: var(--glow-cyan); }
+.graph-mode-btn.active { background: linear-gradient(135deg, rgba(0,245,255,0.25), rgba(157,78,221,0.25)); box-shadow: var(--glow-cyan); }
+
+body.graph-mode-on .app { grid-template-columns: 0 1fr; }
+body.graph-mode-on .calc-panel { width: 0; overflow: hidden; border-right: none; }
+body.graph-mode-on .workspace-tabs .ws-tab:not(#tab-graph) { display: none; }
+body.graph-mode-on .canvas-container { min-height: calc(100vh - 260px); }
+
+/* ---- fn tag visibility toggle ---- */
+.graph-fn-tag { transition: 0.2s; }
+.graph-fn-tag.hidden-fn { opacity: 0.4; }
+.graph-fn-vis {
+  cursor: pointer; color: var(--muted); padding: 0 2px; font-size: 12px;
+  transition: 0.15s;
+}
+.graph-fn-vis.on { color: var(--green); }
+.graph-fn-tag.implicit-fn { border-style: dashed; }
+
+/* ---- canvas top-left toolbar: grid / axis / theme ---- */
+.canvas-toolbar {
+  position: absolute; top: 14px; left: 14px;
+  display: flex; gap: 6px;
+}
+.toolbar-btn {
+  padding: 6px 10px; border-radius: 8px;
+  background: rgba(10,10,15,0.8); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 10px; letter-spacing: 0.5px;
+  backdrop-filter: blur(10px); transition: 0.2s;
+  font-family: var(--mono);
+}
+.toolbar-btn.active { color: var(--cyan); border-color: rgba(0,245,255,0.4); }
+.toolbar-btn:hover { color: var(--text); }
+
+/* ---- live draft plot pulse ---- */
+@keyframes draft-pulse {
+  0%,100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ===========================
+   STEP-BY-STEP SOLUTION PANEL
+   =========================== */
+.steps-header {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.steps-header-actions { display: flex; gap: 8px; }
+.steps-action-btn {
+  padding: 7px 14px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--raised); color: var(--muted);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px;
+  cursor: pointer; transition: 0.2s; display:flex; align-items:center; gap:6px;
+}
+.steps-action-btn:hover { color: var(--cyan); border-color: rgba(0,245,255,0.4); box-shadow: 0 0 10px rgba(0,245,255,0.15); }
+
+.steps-empty {
+  color: var(--muted); font-size: 13px; padding: 40px 20px; text-align: center;
+  border: 1px dashed var(--border); border-radius: 12px;
+}
+
+.steps-original {
+  font-family: var(--code); font-size: 15px; color: var(--muted);
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 14px 18px;
+}
+.steps-original b { color: var(--text); }
+
+.steps-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+@keyframes step-card-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.step-card {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px 20px;
+  animation: step-card-in 0.35s cubic-bezier(0.22,1,0.36,1) backwards;
+  position: relative; overflow: hidden;
+}
+.step-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, var(--violet), var(--cyan));
+}
+.step-card-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.step-num {
+  font-family: var(--display); font-size: 12px; font-weight: 700;
+  color: var(--violet); letter-spacing: 1px; text-transform: uppercase;
+}
+.step-reason {
+  font-size: 10px; letter-spacing: 1px; color: var(--muted);
+  text-transform: uppercase; background: var(--panel);
+  padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border);
+}
+.step-expr {
+  font-family: var(--code); font-size: 16px; color: var(--text);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.step-op { color: var(--cyan); }
+.step-arrow { color: var(--ghost); font-size: 14px; }
+.step-result { color: var(--green); font-weight: 700; }
+.step-context {
+  margin-top: 8px; font-family: var(--code); font-size: 11px; color: var(--ghost);
+}
+
+.step-final {
+  background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(0,255,136,0.08));
+  border: 1px solid rgba(0,245,255,0.4);
+  border-radius: var(--r-lg); padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  box-shadow: var(--glow-cyan);
+}
+.step-final-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.step-final-value { font-family: var(--code); font-size: 28px; font-weight: 700; color: var(--cyan); text-shadow: var(--glow-cyan); }
+
+/* ===========================
    SCROLLBAR
    =========================== */
 ::-webkit-scrollbar { width: 4px; }
@@ -756,6 +887,9 @@ button:focus-visible, input:focus-visible, select:focus-visible {
     </div>
 
     <div class="header-status">
+      <button class="graph-mode-btn" id="graphModeBtn" onclick="toggleGraphMode()" title="Distraction-free graphing view">
+        <span>◈</span> GRAPH MODE
+      </button>
       <div style="display:flex;align-items:center;gap:6px;">
         <div class="status-dot"></div>
         <span>READY</span>
@@ -799,6 +933,9 @@ button:focus-visible, input:focus-visible, select:focus-visible {
       <div class="ws-tab active" onclick="switchTab('graph')" id="tab-graph">
         <span class="tab-icon">◈</span> GRAPH
       </div>
+      <div class="ws-tab" onclick="switchTab('steps')" id="tab-steps">
+        <span class="tab-icon">𝑓</span> STEPS
+      </div>
       <div class="ws-tab" onclick="switchTab('history')" id="tab-history">
         <span class="tab-icon">◷</span> HISTORY
       </div>
@@ -817,8 +954,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
     <div class="ws-panel active" id="panel-graph">
       <div class="graph-controls">
         <div class="input-group">
-          <div class="input-label">Function f(x)</div>
-          <input type="text" class="graph-input" id="graphInput" placeholder="sin(x) + x^2 / 10" onkeydown="if(event.key==='Enter')addPlotFn()">
+          <div class="input-label">Equation — y=f(x) or implicit</div>
+          <input type="text" class="graph-input" id="graphInput" placeholder="y = sin(x)   or   x^2 + y^2 = 25" oninput="onGraphInputChange()" onkeydown="if(event.key==='Enter')addPlotFn()">
         </div>
         <div class="input-group" style="max-width:80px">
           <div class="input-label">X Min</div>
@@ -845,6 +982,11 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
       <div class="canvas-container" id="canvasContainer">
         <canvas id="graphCanvas"></canvas>
+        <div class="canvas-toolbar">
+          <button class="toolbar-btn active" id="btnGrid" onclick="toggleGridAxis('grid')" title="Toggle grid">GRID</button>
+          <button class="toolbar-btn active" id="btnAxis" onclick="toggleGridAxis('axis')" title="Toggle axes">AXES</button>
+          <button class="toolbar-btn" id="btnGraphTheme" onclick="toggleGraphTheme()" title="Light / dark canvas">🌙 DARK</button>
+        </div>
         <div class="canvas-coords" id="canvasCoords">x: 0.00 y: 0.00</div>
         <div class="canvas-info" id="canvasInfo">NO FUNCTIONS PLOTTED</div>
         <div class="canvas-zoom">
@@ -852,6 +994,21 @@ button:focus-visible, input:focus-visible, select:focus-visible {
           <button class="zoom-btn" onclick="zoomGraph(0.8)" title="Zoom out">−</button>
           <button class="zoom-btn" onclick="resetGraphView()" title="Reset view">⟲</button>
         </div>
+      </div>
+    </div>
+
+    <!-- STEP-BY-STEP -->
+    <div class="ws-panel" id="panel-steps">
+      <div class="steps-header">
+        <div class="section-label">Step-by-Step Solution</div>
+        <div class="steps-header-actions">
+          <button class="steps-action-btn" onclick="copyStepsExplanation()">⧉ COPY EXPLANATION</button>
+          <button class="steps-action-btn" onclick="copyStepsAnswer()">⧉ COPY ANSWER</button>
+          <button class="steps-action-btn" onclick="exportStepsTxt()">⇩ EXPORT TXT</button>
+        </div>
+      </div>
+      <div id="stepsBody">
+        <div class="steps-empty">Calculate an expression with <b style="color:var(--text)">=</b> to see it broken down step by step.</div>
       </div>
     </div>
 
@@ -980,12 +1137,18 @@ const state = {
   is2nd: false,
   history: [],
   plots: [],
+  draftPlot: null,          // live preview plot while typing, not yet committed
   plotColor: 'cyan',
   graphScale: 25,
   graphOffX: 0,
   graphOffY: 0,
   isDragging: false,
   dragStart: {x:0, y:0},
+  graphMode: false,
+  showGrid: true,
+  showAxis: true,
+  graphTheme: 'dark',       // 'dark' | 'light'
+  lastSteps: null,          // { steps:[], original, final } for the STEPS panel
 };
 
 /* ============================================================
@@ -1370,6 +1533,11 @@ function calculate() {
     const formatted = formatNumber(result);
     updateDisplay(formatted, 'result');
     addToHistory(raw, formatted);
+
+    const stepData = StepEngine.generate(raw, state.angleMode);
+    state.lastSteps = stepData ? { ...stepData, original: raw } : null;
+    renderSteps(state.lastSteps, raw);
+
     state.expr = formatted;
   } catch {
     updateDisplay('ERROR', 'error');
@@ -1385,6 +1553,236 @@ function formatNumber(n) {
   if (Number.isInteger(n) && Math.abs(n) < 1e15) return String(n);
   if (Math.abs(n) < 1e-7 || Math.abs(n) > 1e12) return n.toExponential(6);
   return parseFloat(n.toPrecision(10)).toString();
+}
+
+/* ============================================================
+   STEP ENGINE — StepEngine + ExpressionNormalizer
+   Walks mathjs's parse tree and repeatedly reduces the innermost
+   "ready" operation (all operands already atomic), recording each
+   reduction as a human-readable step, until a single number remains.
+   This naturally respects parentheses and operator precedence,
+   since a nested operation only becomes "ready" once everything
+   inside it has already been resolved.
+   ============================================================ */
+const StepEngine = (() => {
+  function unwrapParens(n) {
+    while (n && n.type === 'ParenthesisNode') n = n.content;
+    return n;
+  }
+  function isAtomicOperand(n) {
+    n = unwrapParens(n);
+    return n.type === 'ConstantNode' || (n.type === 'SymbolNode' && ['pi','e','tau'].includes(n.name));
+  }
+  function isReadyNode(n) {
+    if (n.type === 'OperatorNode' || n.type === 'FunctionNode') {
+      return n.args.every(isAtomicOperand);
+    }
+    return false;
+  }
+  // Postorder search: the leftmost-deepest node whose operands are all atomic
+  // is the next operation a human would naturally simplify.
+  function findReadyNode(node) {
+    node = unwrapParens(node);
+    if (!node) return null;
+    if (node.type === 'OperatorNode' || node.type === 'FunctionNode') {
+      for (const child of node.args) {
+        const found = findReadyNode(child);
+        if (found) return found;
+      }
+      if (isReadyNode(node)) return node;
+    }
+    return null;
+  }
+  function evalAtomic(n) {
+    n = unwrapParens(n);
+    if (n.type === 'ConstantNode') return n.value;
+    if (n.type === 'SymbolNode') {
+      if (n.name === 'pi') return Math.PI;
+      if (n.name === 'e') return Math.E;
+      if (n.name === 'tau') return 2*Math.PI;
+    }
+    return n.compile().evaluate();
+  }
+
+  const REASONS = {
+    add:'Addition', subtract:'Subtraction', multiply:'Multiplication',
+    divide:'Division', pow:'Power', unaryMinus:'Negation', mod:'Modulo',
+    bitAnd:'Bitwise AND', bitOr:'Bitwise OR', bitXor:'Bitwise XOR',
+    leftShift:'Bit shift', rightShift:'Bit shift',
+    sqrt:'Root', cbrt:'Root', nthRoot:'Root',
+    log10:'Logarithm', log:'Natural logarithm', log2:'Logarithm',
+    factorial:'Factorial', abs:'Absolute value', exp:'Exponential function',
+    sin:'Trigonometry', cos:'Trigonometry', tan:'Trigonometry',
+    asin:'Trigonometry', acos:'Trigonometry', atan:'Trigonometry',
+    floor:'Rounding', ceil:'Rounding', round:'Rounding',
+    permutations:'Permutations', combinations:'Combinations',
+  };
+  const SYMS = { add:'+', subtract:'−', multiply:'×', divide:'÷', pow:'^', mod:'mod',
+    bitAnd:'AND', bitOr:'OR', bitXor:'XOR', leftShift:'<<', rightShift:'>>' };
+
+  function fmtOperand(n) {
+    n = unwrapParens(n);
+    if (n.type === 'ConstantNode') return formatNumber(n.value);
+    if (n.type === 'SymbolNode') return n.name;
+    return n.toString();
+  }
+
+  function describeNode(node, angleMode) {
+    const raw = unwrapParens(node);
+    if (raw.type === 'OperatorNode') {
+      if (raw.fn === 'unaryMinus') {
+        return { expr: `−${fmtOperand(raw.args[0])}`, reason: REASONS.unaryMinus };
+      }
+      const a = fmtOperand(raw.args[0]), b = fmtOperand(raw.args[1]);
+      return { expr: `${a} ${SYMS[raw.fn] || raw.fn} ${b}`, reason: REASONS[raw.fn] || 'Operator precedence' };
+    }
+    const fname = raw.fn.name;
+    const args = raw.args.map(fmtOperand).join(', ');
+    let label = `${fname}(${args})`;
+    if (['sin','cos','tan'].includes(fname) && angleMode === 'deg') label = `${fname}(${args}°)`;
+    if (fname === 'log10') label = `log₁₀(${args})`;
+    if (fname === 'log' && raw.args.length === 1) label = `ln(${args})`;
+    if (fname === 'sqrt') label = `√${args}`;
+    if (fname === 'abs') label = `|${args}|`;
+    if (fname === 'factorial') label = `${args}!`;
+    return { expr: label, reason: REASONS[fname] || 'Simplify' };
+  }
+
+  function computeNode(node, angleMode) {
+    const raw = unwrapParens(node);
+    if (raw.type === 'FunctionNode') {
+      const fname = raw.fn.name;
+      const argVals = raw.args.map(evalAtomic);
+      if (['sin','cos','tan'].includes(fname) && angleMode === 'deg') {
+        return Math[fname](argVals[0] * Math.PI / 180);
+      }
+      if (['asin','acos','atan'].includes(fname)) {
+        const r = Math[fname](argVals[0]);
+        return angleMode === 'deg' ? r * 180 / Math.PI : r;
+      }
+      if (typeof math[fname] === 'function') {
+        const r = math[fname](...argVals);
+        return (typeof r === 'object' && r.toNumber) ? r.toNumber() : r;
+      }
+      const r = raw.compile().evaluate();
+      return (typeof r === 'object' && r.toNumber) ? r.toNumber() : r;
+    }
+    const scope = { pi: Math.PI, e: Math.E, tau: 2*Math.PI };
+    const r = raw.compile().evaluate(scope);
+    return (typeof r === 'object' && r.toNumber) ? r.toNumber() : r;
+  }
+
+  // Returns { steps:[{exprBefore, operation, reason, result, exprAfter}], final }
+  // or null if the expression can't be fully reduced this way (falls back
+  // to a plain "direct result" display in the UI).
+  function generate(rawExpr, angleMode) {
+    let root;
+    try { root = math.parse(rawExpr); } catch { return null; }
+
+    let current = root;
+    const steps = [];
+    let guard = 0;
+    while (unwrapParens(current).type !== 'ConstantNode' && guard < 60) {
+      guard++;
+      const target = findReadyNode(current);
+      if (!target) return null;
+      let value;
+      try { value = computeNode(target, angleMode); } catch { return null; }
+      if (typeof value !== 'number' || !isFinite(value)) return null;
+
+      const desc = describeNode(target, angleMode);
+      const exprBefore = current.toString();
+      const replacement = new math.ConstantNode(value);
+      current = current.transform(n => (n === target ? replacement : n));
+      steps.push({
+        exprBefore,
+        operation: desc.expr,
+        reason: desc.reason,
+        result: value,
+        exprAfter: current.toString(),
+      });
+    }
+    const finalNode = unwrapParens(current);
+    if (finalNode.type !== 'ConstantNode') return null;
+    return { steps, final: finalNode.value };
+  }
+
+  return { generate };
+})();
+
+function renderSteps(data, originalRaw) {
+  const body = $d('stepsBody');
+  if (!data) {
+    body.innerHTML = `<div class="steps-original">Expression: <b>${escHtml(originalRaw)}</b></div>
+      <div class="steps-empty" style="margin-top:12px">This expression is too complex to break into simple steps — see the result on the display.</div>`;
+    return;
+  }
+  let html = `<div class="steps-original">Expression: <b>${escHtml(originalRaw)}</b></div>`;
+  if (data.steps.length) {
+    html += '<div class="steps-list">';
+    data.steps.forEach((s,i) => {
+      html += `
+        <div class="step-card" style="animation-delay:${i*70}ms">
+          <div class="step-card-head">
+            <span class="step-num">Step ${i+1}</span>
+            <span class="step-reason">${escHtml(s.reason)}</span>
+          </div>
+          <div class="step-expr">
+            <span class="step-op">${escHtml(s.operation)}</span>
+            <span class="step-arrow">=</span>
+            <span class="step-result">${escHtml(formatNumber(s.result))}</span>
+          </div>
+          <div class="step-context">${escHtml(s.exprBefore)} &nbsp;→&nbsp; ${escHtml(s.exprAfter)}</div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  html += `
+    <div class="step-final" style="animation:step-card-in 0.35s cubic-bezier(0.22,1,0.36,1) backwards; animation-delay:${data.steps.length*70+80}ms">
+      <div>
+        <div class="step-final-label">Final Answer</div>
+      </div>
+      <div class="step-final-value">${escHtml(formatNumber(data.final))}</div>
+    </div>`;
+  body.innerHTML = html;
+}
+
+function buildExplanationText() {
+  const d = state.lastSteps;
+  if (!d) return '';
+  const lines = [`Expression: ${d.original}`, ''];
+  d.steps.forEach((s,i) => lines.push(`Step ${i+1} (${s.reason}): ${s.operation} = ${formatNumber(s.result)}`));
+  lines.push('', `Final Answer: ${formatNumber(d.final)}`);
+  return lines.join('\n');
+}
+
+function copyStepsExplanation() {
+  const text = buildExplanationText();
+  if (!text) { toast('No steps to copy yet'); return; }
+  const done = () => toast('Explanation copied');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+}
+
+function copyStepsAnswer() {
+  const d = state.lastSteps;
+  if (!d) { toast('No result to copy yet'); return; }
+  const text = formatNumber(d.final);
+  const done = () => toast('Answer copied');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+}
+
+function exportStepsTxt() {
+  const text = buildExplanationText();
+  if (!text) { toast('No steps to export yet'); return; }
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'calc-steps.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exported as TXT');
 }
 
 /* ============================================================
@@ -1555,30 +1953,79 @@ function selectColor(el) {
   state.plotColor = el.dataset.c;
 }
 
-function addPlotFn() {
-  const expr = $d('graphInput').value.trim();
-  if (!expr) { toast('Enter a function first'); return; }
-  // Sanity-check the function actually evaluates before adding it, so
-  // a typo doesn't silently produce an empty plot with no feedback.
-  try {
-    const testVal = math.evaluate(expr, { x: 1, PI: Math.PI, E: Math.E });
-    if (typeof testVal !== 'number' && !(testVal && testVal.toNumber)) {
-      toast("That doesn't look like a function of x");
-      return;
-    }
-  } catch (err) {
-    toast('Could not parse function: ' + err.message);
-    return;
+/* ---- EquationParser: classify raw input as an explicit y=f(x) plot or an
+   implicit relation like x^2+y^2=25, and build a testable/evaluable form. ---- */
+function classifyEquation(raw) {
+  let expr = raw.trim();
+  if (!expr) return null;
+
+  // "y = ..." is explicit — strip the "y=" prefix and treat the rest as f(x)
+  const yPrefix = expr.match(/^y\s*=\s*(.+)$/i);
+  if (yPrefix && !yPrefix[1].includes('=')) {
+    return { type: 'explicit', fnExpr: yPrefix[1].trim(), display: expr };
   }
-  state.plots.push({ expr, color: state.plotColor });
+
+  // Any other '=' with a free 'y' present is treated as an implicit relation
+  if (expr.includes('=')) {
+    const parts = expr.split('=');
+    if (parts.length === 2) {
+      return { type: 'implicit', lhs: parts[0].trim(), rhs: parts[1].trim(), display: expr };
+    }
+    return null; // malformed, more than one '='
+  }
+
+  // Bare expression, e.g. "sin(x)" — treated as f(x)
+  return { type: 'explicit', fnExpr: expr, display: 'y = ' + expr };
+}
+
+function testEquation(cls) {
+  if (!cls) return false;
+  try {
+    if (cls.type === 'explicit') {
+      const v = math.evaluate(cls.fnExpr, { x: 1, PI: Math.PI, E: Math.E });
+      return typeof v === 'number' || (v && v.toNumber);
+    } else {
+      const scope = { x: 1, y: 1, PI: Math.PI, E: Math.E };
+      const l = math.evaluate(cls.lhs, scope);
+      const r = math.evaluate(cls.rhs, scope);
+      return typeof l === 'number' && typeof r === 'number';
+    }
+  } catch { return false; }
+}
+
+/* ---- Live "auto update while typing" draft preview, debounced ---- */
+let graphInputDebounce = null;
+function onGraphInputChange() {
+  clearTimeout(graphInputDebounce);
+  graphInputDebounce = setTimeout(() => {
+    const raw = $d('graphInput').value;
+    const cls = classifyEquation(raw);
+    if (cls && testEquation(cls)) {
+      state.draftPlot = { ...cls, color: state.plotColor, visible: true, draft: true };
+    } else {
+      state.draftPlot = null;
+    }
+    drawGraph();
+  }, 220);
+}
+
+function addPlotFn() {
+  const raw = $d('graphInput').value.trim();
+  if (!raw) { toast('Enter an equation first'); return; }
+  const cls = classifyEquation(raw);
+  if (!cls) { toast('Only one "=" is supported per equation'); return; }
+  if (!testEquation(cls)) { toast('Could not parse that equation'); return; }
+  state.plots.push({ ...cls, color: state.plotColor, visible: true });
+  state.draftPlot = null;
   $d('graphInput').value = '';
   renderFnTags();
   drawGraph();
-  $d('canvasInfo').textContent = state.plots.length + ' FUNCTION' + (state.plots.length>1?'S':'') + ' PLOTTED';
+  updateCanvasInfo();
 }
 
 function clearPlots() {
   state.plots = [];
+  state.draftPlot = null;
   renderFnTags();
   drawGraph();
   $d('canvasInfo').textContent = 'NO FUNCTIONS PLOTTED';
@@ -1588,14 +2035,26 @@ function removePlot(i) {
   state.plots.splice(i,1);
   renderFnTags();
   drawGraph();
-  $d('canvasInfo').textContent = state.plots.length ? (state.plots.length + ' FUNCTION' + (state.plots.length>1?'S':'') + ' PLOTTED') : 'NO FUNCTIONS PLOTTED';
+  updateCanvasInfo();
+}
+
+function togglePlotVisibility(i) {
+  state.plots[i].visible = !state.plots[i].visible;
+  renderFnTags();
+  drawGraph();
+}
+
+function updateCanvasInfo() {
+  const n = state.plots.filter(p=>p.visible).length;
+  $d('canvasInfo').textContent = n ? (n + ' FUNCTION' + (n>1?'S':'') + ' PLOTTED') : 'NO FUNCTIONS PLOTTED';
 }
 
 function renderFnTags() {
   $d('fnTagsList').innerHTML = state.plots.map((p,i) => `
-    <div class="graph-fn-tag">
+    <div class="graph-fn-tag ${p.visible ? '' : 'hidden-fn'} ${p.type==='implicit' ? 'implicit-fn' : ''}">
+      <span class="graph-fn-vis ${p.visible?'on':''}" onclick="togglePlotVisibility(${i})" title="Toggle visibility">${p.visible ? '◉' : '◯'}</span>
       <div class="graph-fn-dot" style="background:${colorMap[p.color]}"></div>
-      <span style="color:${colorMap[p.color]};font-size:12px">${escHtml(p.expr)}</span>
+      <span style="color:${colorMap[p.color]};font-size:12px">${escHtml(p.display || p.fnExpr)}</span>
       <span class="graph-fn-remove" onclick="removePlot(${i})">✕</span>
     </div>
   `).join('');
@@ -1612,92 +2071,187 @@ function resetGraphView() {
   toast('View reset');
 }
 
+/* ---- Graph Mode: distraction-free fullscreen graphing ---- */
+function toggleGraphMode() {
+  state.graphMode = !state.graphMode;
+  document.body.classList.toggle('graph-mode-on', state.graphMode);
+  $d('graphModeBtn').classList.toggle('active', state.graphMode);
+  if (state.graphMode) switchTab('graph');
+  setTimeout(drawGraph, 60);
+}
+
+/* ---- Grid / axis toggles ---- */
+function toggleGridAxis(which) {
+  if (which === 'grid') { state.showGrid = !state.showGrid; $d('btnGrid').classList.toggle('active', state.showGrid); }
+  if (which === 'axis') { state.showAxis = !state.showAxis; $d('btnAxis').classList.toggle('active', state.showAxis); }
+  drawGraph();
+}
+
+/* ---- Light / dark adaptive canvas theme ---- */
+function toggleGraphTheme() {
+  state.graphTheme = state.graphTheme === 'dark' ? 'light' : 'dark';
+  const btn = $d('btnGraphTheme');
+  btn.textContent = state.graphTheme === 'dark' ? '🌙 DARK' : '☀ LIGHT';
+  btn.classList.toggle('active', state.graphTheme === 'light');
+  drawGraph();
+}
+
+/* CanvasRenderer: draws grid/axes/cursor chrome and delegates to the two plot renderers below. */
+let graphRafPending = false;
 function drawGraph() {
+  // Throttle redraws to one per animation frame so rapid pan/zoom/typing never lags.
+  if (graphRafPending) return;
+  graphRafPending = true;
+  requestAnimationFrame(() => { graphRafPending = false; renderGraphNow(); });
+}
+
+function renderGraphNow() {
   const { W, H } = resizeCanvas();
   const sc = state.graphScale;
   const ox = state.graphOffX, oy = state.graphOffY;
+  const light = state.graphTheme === 'light';
+
+  const bg       = light ? '#f4f4fa' : '#050508';
+  const gridCol  = light ? 'rgba(20,20,40,0.08)'  : 'rgba(255,255,255,0.05)';
+  const axisCol  = light ? 'rgba(20,20,40,0.35)'  : 'rgba(255,255,255,0.3)';
+  const originCol= light ? 'rgba(20,20,40,0.45)'  : 'rgba(255,255,255,0.2)';
+  const labelCol = light ? 'rgba(20,20,40,0.55)'  : 'rgba(255,255,255,0.25)';
 
   ctx.clearRect(0,0,W,H);
-
-  // Background
-  ctx.fillStyle = '#050508';
+  ctx.fillStyle = bg;
   ctx.fillRect(0,0,W,H);
 
-  // Grid
   const originX = W/2 + ox;
   const originY = H/2 + oy;
 
-  ctx.lineWidth = 1;
-  for (let x = (originX % sc); x < W; x += sc) {
-    ctx.strokeStyle = Math.abs(x - originX) < 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)';
-    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
-  }
-  for (let y = (originY % sc); y < H; y += sc) {
-    ctx.strokeStyle = Math.abs(y - originY) < 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)';
-    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  if (state.showGrid) {
+    ctx.lineWidth = 1;
+    for (let x = (originX % sc); x < W; x += sc) {
+      ctx.strokeStyle = Math.abs(x - originX) < 1 ? originCol : gridCol;
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    }
+    for (let y = (originY % sc); y < H; y += sc) {
+      ctx.strokeStyle = Math.abs(y - originY) < 1 ? originCol : gridCol;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+    ctx.fillStyle = labelCol;
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    for (let x = (originX % sc); x < W; x += sc) {
+      const val = Math.round((x - originX) / sc);
+      if (val !== 0) ctx.fillText(val, x, originY + 14);
+    }
+    ctx.textAlign = 'right';
+    for (let y = (originY % sc); y < H; y += sc) {
+      const val = Math.round((originY - y) / sc);
+      if (val !== 0) ctx.fillText(val, originX - 6, y + 4);
+    }
   }
 
-  // Axis labels
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  ctx.font = '10px DM Mono, monospace';
-  ctx.textAlign = 'center';
-  for (let x = (originX % sc); x < W; x += sc) {
-    const val = Math.round((x - originX) / sc);
-    if (val !== 0) ctx.fillText(val, x, originY + 14);
+  if (state.showAxis) {
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = axisCol;
+    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(W, originY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, H); ctx.stroke();
+    ctx.fillStyle = axisCol;
+    ctx.beginPath(); ctx.moveTo(W-6,originY-4); ctx.lineTo(W,originY); ctx.lineTo(W-6,originY+4); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(originX-4,6); ctx.lineTo(originX,0); ctx.lineTo(originX+4,6); ctx.fill();
   }
-  ctx.textAlign = 'right';
-  for (let y = (originY % sc); y < H; y += sc) {
-    const val = Math.round((originY - y) / sc);
-    if (val !== 0) ctx.fillText(val, originX - 6, y + 4);
-  }
-
-  // Axes
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(W, originY); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, H); ctx.stroke();
-
-  // Arrowheads
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.beginPath(); ctx.moveTo(W-6,originY-4); ctx.lineTo(W,originY); ctx.lineTo(W-6,originY+4); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(originX-4,6); ctx.lineTo(originX,0); ctx.lineTo(originX+4,6); ctx.fill();
 
   const xMin = parseFloat($d('xMin').value);
   const xMax = parseFloat($d('xMax').value);
   const rangeMin = isFinite(xMin) ? xMin : -10;
   const rangeMax = isFinite(xMax) && xMax > rangeMin ? xMax : rangeMin + 20;
 
-  // Plot each function
-  state.plots.forEach(plot => {
-    const col = colorMap[plot.color] || '#00f5ff';
-    ctx.strokeStyle = col;
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = col; ctx.shadowBlur = 8;
-    ctx.beginPath();
-
-    let started = false;
-    let prevPy = null;
-    const steps = Math.max(200, W * 2);
-    // NOTE: mathjs uses '^' (not '**') for exponentiation, and it is already
-    // supported natively, so the expression is evaluated as-is here.
-    for (let i = 0; i <= steps; i++) {
-      const xVal = rangeMin + (rangeMax - rangeMin) * i / steps;
-      const px   = originX + xVal * sc;
-      try {
-        let yVal  = math.evaluate(plot.expr, { x: xVal, PI: Math.PI, E: Math.E });
-        if (typeof yVal === 'object' && yVal.toNumber) yVal = yVal.toNumber();
-        const py = originY - yVal * sc;
-        // Break the line across discontinuities/asymptotes instead of drawing a vertical spike
-        if (!isFinite(py) || (prevPy !== null && Math.abs(py - prevPy) > H)) {
-          started = false; prevPy = null; continue;
-        }
-        if (!started) { ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
-        prevPy = py;
-      } catch { started = false; prevPy = null; }
+  const allPlots = state.plots.concat(state.draftPlot ? [state.draftPlot] : []);
+  allPlots.forEach(plot => {
+    if (plot.visible === false) return;
+    if (plot.type === 'implicit') {
+      renderImplicitPlot(plot, originX, originY, sc, W, H);
+    } else {
+      renderExplicitPlot(plot, originX, originY, sc, rangeMin, rangeMax, W, H);
     }
-    ctx.stroke();
-    ctx.shadowBlur = 0;
   });
+}
+
+/* GraphEngine — explicit y=f(x) line plot */
+function renderExplicitPlot(plot, originX, originY, sc, rangeMin, rangeMax, W, H) {
+  const col = colorMap[plot.color] || '#00f5ff';
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2.5;
+  ctx.globalAlpha = plot.draft ? 0.6 : 1;
+  ctx.shadowColor = col; ctx.shadowBlur = 8;
+  ctx.beginPath();
+
+  let started = false;
+  let prevPy = null;
+  const steps = Math.max(200, W * 2);
+  // NOTE: mathjs uses '^' (not '**') for exponentiation, and it is already
+  // supported natively, so the expression is evaluated as-is here.
+  for (let i = 0; i <= steps; i++) {
+    const xVal = rangeMin + (rangeMax - rangeMin) * i / steps;
+    const px   = originX + xVal * sc;
+    try {
+      let yVal  = math.evaluate(plot.fnExpr, { x: xVal, PI: Math.PI, E: Math.E });
+      if (typeof yVal === 'object' && yVal.toNumber) yVal = yVal.toNumber();
+      const py = originY - yVal * sc;
+      // Break the line across discontinuities/asymptotes instead of drawing a vertical spike
+      if (!isFinite(py) || (prevPy !== null && Math.abs(py - prevPy) > H)) {
+        started = false; prevPy = null; continue;
+      }
+      if (!started) { ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+      prevPy = py;
+    } catch { started = false; prevPy = null; }
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+}
+
+/* GraphEngine — implicit relation, e.g. x^2+y^2=25, via a lightweight
+   sign-change scan (cheap marching-squares alternative: mark pixels
+   where lhs-rhs crosses zero between neighbours). */
+function renderImplicitPlot(plot, originX, originY, sc, W, H) {
+  const col = colorMap[plot.color] || '#00f5ff';
+  const step = 3; // sample every N px for performance
+  const cols = Math.ceil(W/step) + 1;
+  const rows = Math.ceil(H/step) + 1;
+  const f = (px, py) => {
+    const xVal = (px - originX) / sc;
+    const yVal = (originY - py) / sc;
+    try {
+      const l = math.evaluate(plot.lhs, { x: xVal, y: yVal, PI: Math.PI, E: Math.E });
+      const r = math.evaluate(plot.rhs, { x: xVal, y: yVal, PI: Math.PI, E: Math.E });
+      const lv = (typeof l === 'object' && l.toNumber) ? l.toNumber() : l;
+      const rv = (typeof r === 'object' && r.toNumber) ? r.toNumber() : r;
+      if (typeof lv !== 'number' || typeof rv !== 'number') return null;
+      return lv - rv;
+    } catch { return null; }
+  };
+
+  // Sample a grid once, then draw a point wherever an edge between
+  // neighbouring samples changes sign (i.e. the curve passes through it).
+  const grid = new Array(cols * rows);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      grid[j*cols+i] = f(i*step, j*step);
+    }
+  }
+
+  ctx.fillStyle = col;
+  ctx.shadowColor = col; ctx.shadowBlur = plot.draft ? 3 : 6;
+  ctx.globalAlpha = plot.draft ? 0.6 : 0.9;
+  for (let j = 0; j < rows-1; j++) {
+    for (let i = 0; i < cols-1; i++) {
+      const v00 = grid[j*cols+i], v10 = grid[j*cols+i+1], v01 = grid[(j+1)*cols+i];
+      if (v00 === null || v10 === null || v01 === null) continue;
+      if ((v00 >= 0) !== (v10 >= 0) || (v00 >= 0) !== (v01 >= 0)) {
+        ctx.fillRect(i*step, j*step, 2, 2);
+      }
+    }
+  }
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
 }
 
 /* Graph mouse interaction */
@@ -1729,17 +2283,42 @@ canvas.addEventListener('wheel', e => {
   drawGraph();
 }, { passive: false });
 
-/* Touch pan */
+/* Touch pan + pinch zoom */
 let lastTouch = null;
-canvas.addEventListener('touchstart', e=>{ lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY}; });
+let lastPinchDist = null;
+function touchDist(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.hypot(dx, dy);
+}
+canvas.addEventListener('touchstart', e=>{
+  if (e.touches.length === 2) {
+    lastPinchDist = touchDist(e.touches);
+  } else {
+    lastTouch = {x:e.touches[0].clientX,y:e.touches[0].clientY};
+  }
+});
 canvas.addEventListener('touchmove', e=>{
   e.preventDefault();
+  if (e.touches.length === 2) {
+    const dist = touchDist(e.touches);
+    if (lastPinchDist) {
+      const factor = dist / lastPinchDist;
+      state.graphScale = Math.max(5, Math.min(400, state.graphScale * factor));
+    }
+    lastPinchDist = dist;
+    drawGraph();
+    return;
+  }
   const dx = e.touches[0].clientX - lastTouch.x;
   const dy = e.touches[0].clientY - lastTouch.y;
   state.graphOffX += dx; state.graphOffY += dy;
   lastTouch = {x:e.touches[0].clientX,y:e.touches[0].clientY};
   drawGraph();
 }, { passive:false });
+canvas.addEventListener('touchend', e=>{
+  if (e.touches.length < 2) lastPinchDist = null;
+}, { passive:true });
 
 /* ============================================================
    SOLVERS
@@ -1997,8 +2576,8 @@ populateConvUnits();
 runConversion('from');
 setTimeout(() => {
   // Draw a nice default graph
-  state.plots.push({ expr: 'sin(x)', color: 'cyan' });
-  state.plots.push({ expr: 'x^2/10', color: 'magenta' });
+  state.plots.push({ type:'explicit', fnExpr: 'sin(x)', display:'y = sin(x)', color: 'cyan', visible: true });
+  state.plots.push({ type:'explicit', fnExpr: 'x^2/10', display:'y = x^2/10', color: 'magenta', visible: true });
   renderFnTags();
   drawGraph();
   $d('canvasInfo').textContent = '2 FUNCTIONS PLOTTED';
